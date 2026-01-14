@@ -24,6 +24,7 @@ class StockPriceChart extends ApexChartWidget
         $data = \App\Models\DayPrice::query()
             ->where('stock_id', $this->stockId)
             ->orderBy('date')
+            ->limit(120)
             ->get()
             ->map(function ($dayPrice) {
                 return [
