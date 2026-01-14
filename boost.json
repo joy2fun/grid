@@ -1,0 +1,14 @@
+{
+    "agents": [
+        "claude_code",
+        "gemini"
+    ],
+    "editors": [
+        "claude_code",
+        "gemini",
+        "vscode"
+    ],
+    "guidelines": [
+        "filament/filament"
+    ]
+}
