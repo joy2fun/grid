@@ -12,11 +12,11 @@ class StockService
      * Sync stock prices by stock code from the provided API
      *
      * @param  string  $stockCode  The stock code (e.g., 'sh601166')
-     * @return bool True if sync was successful, false otherwise
+     * @return array Result with success status and additional info like processed count
      */
-    public function syncPriceByStockCode(string $stockCode): bool
+    public function syncPriceByStockCode(string $stockCode): array
     {
-        // Construct the API URL
+        // Construct the API URL, default to 2000 days of data
         $url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={$stockCode},day,,,2000,qfq";
 
         try {
@@ -29,7 +29,7 @@ class StockService
                     'body' => $response->body(),
                 ]);
 
-                return false;
+                return ['success' => false, 'processed_count' => 0];
             }
 
             $data = $response->json();
@@ -37,7 +37,7 @@ class StockService
             if (! isset($data['data'][$stockCode]['qfqday'])) {
                 \Log::error("Invalid response format for stock {$stockCode}", ['data' => $data]);
 
-                return false;
+                return ['success' => false, 'processed_count' => 0];
             }
 
             $prices = $data['data'][$stockCode]['qfqday'];
@@ -69,24 +69,26 @@ class StockService
             }
 
             if (empty($dayPricesData)) {
-                return true; // Nothing to sync
+                return ['success' => true, 'processed_count' => 0]; // Nothing to sync
             }
 
             // Process in chunks to improve performance
             $chunks = array_chunk($dayPricesData, 100);
+            $processedCount = 0;
 
             foreach ($chunks as $chunk) {
                 $this->bulkUpsertDayPrices($chunk);
+                $processedCount += count($chunk);
             }
 
-            return true;
+            return ['success' => true, 'processed_count' => $processedCount];
         } catch (\Exception $e) {
             \Log::error("Error syncing stock prices for {$stockCode}", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return false;
+            return ['success' => false, 'processed_count' => 0];
         }
     }
 
