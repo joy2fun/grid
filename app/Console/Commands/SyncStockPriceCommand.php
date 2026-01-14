@@ -3,10 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Stock;
-use App\Models\DayPrice;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class SyncStockPriceCommand extends Command
 {
@@ -40,22 +39,24 @@ class SyncStockPriceCommand extends Command
             // Fetch data from the API
             $response = Http::get($url);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 $this->error("Failed to fetch stock data for {$stockCode}");
-                $this->error("Status: " . $response->status());
-                $this->error("Body: " . $response->body());
+                $this->error('Status: '.$response->status());
+                $this->error('Body: '.$response->body());
+
                 return 1;
             }
 
             $data = $response->json();
 
-            if (!isset($data['data'][$stockCode]['qfqday'])) {
+            if (! isset($data['data'][$stockCode]['qfqday'])) {
                 $this->error("Invalid response format for stock {$stockCode}");
+
                 return 1;
             }
 
             $prices = $data['data'][$stockCode]['qfqday'];
-            $this->info("Found " . count($prices) . " price records to sync");
+            $this->info('Found '.count($prices).' price records to sync');
 
             // Find or create the stock
             $stock = Stock::firstOrCreate(
@@ -83,6 +84,7 @@ class SyncStockPriceCommand extends Command
 
             if (empty($dayPricesData)) {
                 $this->info("No price data to sync for {$stockCode}");
+
                 return 0;
             }
 
@@ -103,16 +105,14 @@ class SyncStockPriceCommand extends Command
 
             return 0;
         } catch (\Exception $e) {
-            $this->error("Error syncing stock prices for {$stockCode}: " . $e->getMessage());
+            $this->error("Error syncing stock prices for {$stockCode}: ".$e->getMessage());
+
             return 1;
         }
     }
 
     /**
      * Bulk upsert day prices to handle duplicates efficiently
-     *
-     * @param array $dayPricesData
-     * @return void
      */
     private function bulkUpsertDayPrices(array $dayPricesData): void
     {
@@ -132,9 +132,9 @@ class SyncStockPriceCommand extends Command
             $bindings[] = $dayPriceData['volume'];
         }
 
-        $sql = "
+        $sql = '
             INSERT OR REPLACE INTO day_prices (stock_id, date, open_price, close_price, high_price, low_price, volume)
-            VALUES " . implode(',', $values);
+            VALUES '.implode(',', $values);
 
         DB::statement($sql, $bindings);
     }
@@ -142,8 +142,8 @@ class SyncStockPriceCommand extends Command
     /**
      * Extract stock name from API response
      *
-     * @param array $data The API response data
-     * @param string $stockCode The stock code
+     * @param  array  $data  The API response data
+     * @param  string  $stockCode  The stock code
      * @return string The stock name
      */
     private function extractStockName(array $data, string $stockCode): string

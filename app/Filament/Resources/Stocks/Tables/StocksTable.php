@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Stocks\Tables;
 
-use App\Filament\Resources\Stocks\StockResource;
 use App\Models\Stock;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -36,6 +36,12 @@ class StocksTable
             ])
             ->recordActions([
                 EditAction::make(),
+                Action::make('chart')
+                    ->label('Price Chart')
+                    ->icon('heroicon-o-chart-bar')
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false)
+                    ->modalContent(fn (Stock $record) => view('filament.resources.stocks.stock-chart-modal', ['record' => $record])),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

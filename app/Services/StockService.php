@@ -3,16 +3,15 @@
 namespace App\Services;
 
 use App\Models\Stock;
-use App\Models\DayPrice;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class StockService
 {
     /**
      * Sync stock prices by stock code from the provided API
      *
-     * @param string $stockCode The stock code (e.g., 'sh601166')
+     * @param  string  $stockCode  The stock code (e.g., 'sh601166')
      * @return bool True if sync was successful, false otherwise
      */
     public function syncPriceByStockCode(string $stockCode): bool
@@ -24,18 +23,20 @@ class StockService
             // Fetch data from the API
             $response = Http::get($url);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 \Log::error("Failed to fetch stock data for {$stockCode}", [
                     'status' => $response->status(),
-                    'body' => $response->body()
+                    'body' => $response->body(),
                 ]);
+
                 return false;
             }
 
             $data = $response->json();
 
-            if (!isset($data['data'][$stockCode]['qfqday'])) {
+            if (! isset($data['data'][$stockCode]['qfqday'])) {
                 \Log::error("Invalid response format for stock {$stockCode}", ['data' => $data]);
+
                 return false;
             }
 
@@ -82,17 +83,15 @@ class StockService
         } catch (\Exception $e) {
             \Log::error("Error syncing stock prices for {$stockCode}", [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Bulk upsert day prices to handle duplicates efficiently
-     *
-     * @param array $dayPricesData
-     * @return void
      */
     private function bulkUpsertDayPrices(array $dayPricesData): void
     {
@@ -112,9 +111,9 @@ class StockService
             $bindings[] = $dayPriceData['volume'];
         }
 
-        $sql = "
+        $sql = '
             INSERT OR REPLACE INTO day_prices (stock_id, date, open_price, close_price, high_price, low_price, volume)
-            VALUES " . implode(',', $values);
+            VALUES '.implode(',', $values);
 
         DB::statement($sql, $bindings);
     }
@@ -122,8 +121,8 @@ class StockService
     /**
      * Extract stock name from API response
      *
-     * @param array $data The API response data
-     * @param string $stockCode The stock code
+     * @param  array  $data  The API response data
+     * @param  string  $stockCode  The stock code
      * @return string The stock name
      */
     private function extractStockName(array $data, string $stockCode): string

@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Stock;
 use App\Models\DayPrice;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Stock;
 use Illuminate\Database\Seeder;
 
 class StockSeeder extends Seeder
