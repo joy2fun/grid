@@ -14,8 +14,7 @@ class TradeForm
         return $schema
             ->components([
                 Select::make('grid_id')
-                    ->relationship('grid', 'name')
-                    ->required(),
+                    ->relationship('grid', 'name'),
                 Select::make('stock_id')
                     ->relationship('stock', 'name')
                     ->required(),
