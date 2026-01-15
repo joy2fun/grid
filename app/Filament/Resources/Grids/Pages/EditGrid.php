@@ -16,4 +16,11 @@ class EditGrid extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            \App\Filament\Resources\Grids\Widgets\GridTradesChart::class,
+        ];
+    }
 }

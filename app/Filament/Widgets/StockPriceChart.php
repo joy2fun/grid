@@ -13,6 +13,8 @@ class StockPriceChart extends ApexChartWidget
 
     protected static ?string $heading = 'Stock Price History';
 
+    protected ?string $pollingInterval = null;
+
     public ?int $stockId = null;
 
     protected function getOptions(): array
