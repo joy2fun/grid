@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Stocks;
 
+use App\Filament\Resources\Stocks\Pages\BacktestStock;
 use App\Filament\Resources\Stocks\Pages\CreateStock;
 use App\Filament\Resources\Stocks\Pages\EditStock;
 use App\Filament\Resources\Stocks\Pages\ListStocks;
@@ -45,6 +46,7 @@ class StockResource extends Resource
             'index' => ListStocks::route('/'),
             'create' => CreateStock::route('/create'),
             'edit' => EditStock::route('/{record}/edit'),
+            'backtest' => BacktestStock::route('/{record}/backtest'),
         ];
     }
 }

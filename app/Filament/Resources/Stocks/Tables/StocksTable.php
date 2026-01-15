@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Stocks\Tables;
 
+use App\Filament\Resources\Stocks\Pages\BacktestStock;
 use App\Models\Stock;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -34,8 +35,12 @@ class StocksTable
             ->filters([
                 //
             ])
-            ->recordActions([
+            ->actions([
                 EditAction::make(),
+                Action::make('backtest')
+                    ->label('Backtest')
+                    ->icon('heroicon-o-presentation-chart-line')
+                    ->url(fn (Stock $record) => BacktestStock::getUrl(['record' => $record])),
                 Action::make('chart')
                     ->label('Price Chart')
                     ->icon('heroicon-o-chart-bar')
