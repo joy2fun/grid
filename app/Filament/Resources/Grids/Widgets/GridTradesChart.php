@@ -76,19 +76,17 @@ class GridTradesChart extends ApexChartWidget
                     ? $trade->executed_at->toDateString() 
                     : \Illuminate\Support\Carbon::parse($trade->executed_at)->toDateString();
                 
-                // Mirror Backtest Logic: Use the day's CLOSE price for the marker position y-value
-                // But show the ACTUAL TRADING PRICE in the label
-                $dayPrice = $datesMap->get($dateStr);
-                $yPosition = $dayPrice ? (float)$dayPrice->close_price : (float)$trade->price;
+                // Use the ACTUAL TRADING PRICE for the marker position y-value
+                $yPosition = (float)$trade->price;
 
                 return [
                     'x' => $dateStr,
                     'y' => $yPosition,
                     'marker' => [
-                        'size' => 6,
+                        'size' => 2,
                         'fillColor' => $color,
                         'strokeColor' => '#fff',
-                        'strokeWidth' => 2,
+                        'strokeWidth' => 1,
                         'shape' => 'circle',
                     ],
                     'label' => [

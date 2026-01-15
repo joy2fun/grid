@@ -107,32 +107,13 @@
                             // Extract dates for category labels
                             let categories = chartData.map(item => item.x);
 
-                            // Convert annotations to use date strings and points
-                            let pointAnnotations = annotations.map(ann => {
-                                let dateStr = new Date(ann.x).toISOString().split('T')[0];
-                                let index = categories.indexOf(dateStr);
-
-                                // Find the y value (close price) for this date
-                                let dataPoint = chartData[index];
-                                let yValue = dataPoint ? dataPoint.y[3] : 0; // [3] is close price
-
-                                return {
-                                    x: dateStr, // Use date string instead of index
-                                    y: yValue,
-                                    marker: {
-                                        size: 6,
-                                        fillColor: ann.borderColor,
-                                        strokeColor: '#fff',
-                                        strokeWidth: 2,
-                                        shape: 'circle'
-                                    },
-                                    label: {
-                                        ...ann.label,
-                                        text: ann.label.text,
-                                        offsetY: -10
-                                    }
-                                };
-                            });
+                            // Use annotations directly from PHP
+                            let pointAnnotations = annotations.map(ann => ({
+                                x: ann.x,
+                                y: ann.y,
+                                marker: ann.marker,
+                                label: ann.label
+                            }));
 
                             let options = {
                                 series: [{
@@ -174,13 +155,9 @@
                                     }
                                 },
                                 yaxis: {
+                                    decimalsInFloat: 3,
                                     tooltip: {
                                         enabled: true
-                                    },
-                                    labels: {
-                                        formatter: function(val) {
-                                            return '$' + val.toFixed(3);
-                                        }
                                     }
                                 },
                                 tooltip: {

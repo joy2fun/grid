@@ -23,57 +23,85 @@ class StockPriceChart extends ApexChartWidget
             return [];
         }
 
-        $data = \App\Models\DayPrice::query()
+        $prices = \App\Models\DayPrice::query()
             ->where('stock_id', $this->stockId)
             ->orderBy('date', 'desc')
             ->limit(120)
             ->get()
-            ->map(function ($dayPrice) {
-                return [
-                    'x' => $dayPrice->date,
-                    'y' => [
-                        $dayPrice->open_price,
-                        $dayPrice->high_price,
-                        $dayPrice->low_price,
-                        $dayPrice->close_price,
-                    ],
-                ];
-            });
+            ->reverse() // Ensure chronological order for chart
+            ->values();
+
+        $chartData = $prices->map(function ($dayPrice) {
+            return [
+                'x' => $dayPrice->date->toDateString(),
+                'y' => [
+                    (float) $dayPrice->open_price,
+                    (float) $dayPrice->high_price,
+                    (float) $dayPrice->low_price,
+                    (float) $dayPrice->close_price,
+                ],
+            ];
+        });
+
+        $categories = $chartData->pluck('x')->toArray();
 
         $trades = \App\Models\Trade::query()
             ->where('stock_id', $this->stockId)
             ->orderBy('executed_at')
-            ->get()
-            ->map(function ($trade) {
-                $color = $trade->side === 'buy' ? '#00E396' : '#FF4560'; // Green for buy, Red for sell
-                $dayStart = $trade->executed_at->copy()->startOfDay()->timestamp * 1000; // Start of day in ms
-                return [
-                    'x' => $dayStart,
+            ->get();
+
+        $pointAnnotations = $trades->map(function ($trade) use ($chartData, $categories) {
+            $dateStr = $trade->executed_at->toDateString();
+            $color = $trade->side === 'buy' ? '#00E396' : '#FF4560';
+
+            return [
+                'x' => $dateStr,
+                'y' => (float) $trade->price,
+                'marker' => [
+                    'size' => 2,
+                    'fillColor' => $color,
+                    'strokeColor' => '#fff',
+                    'strokeWidth' => 1,
+                    'shape' => 'circle'
+                ],
+                'label' => [
                     'borderColor' => $color,
-                    'label' => [
-                        'borderColor' => $color,
-                        'style' => [
-                            'color' => '#fff',
-                            'background' => $color,
-                        ],
-                        'text' => ucfirst($trade->side) . ': $' . number_format($trade->price, 2),
+                    'style' => [
+                        'color' => '#fff',
+                        'background' => $color,
+                        'fontSize' => '10px',
+                        'fontWeight' => 'bold',
                     ],
-                ];
-            });
+                    'text' => ($trade->side === 'buy' ? 'B ' : 'S ') . number_format($trade->price, 3),
+                    'offsetY' => -10
+                ]
+            ];
+        })->values()->toArray();
 
         return [
             'chart' => [
                 'type' => 'candlestick',
                 'height' => 350,
+                'toolbar' => [
+                    'show' => true,
+                ]
             ],
             'series' => [
                 [
                     'name' => 'Price',
-                    'data' => $data->toArray(),
+                    'data' => $chartData->toArray(),
                 ],
             ],
             'xaxis' => [
-                'type' => 'datetime',
+                'type' => 'category',
+                'categories' => $categories,
+                'tickAmount' => 10,
+                'labels' => [
+                    'rotate' => -45,
+                    'style' => [
+                        'fontSize' => '11px'
+                    ]
+                ]
             ],
             'yaxis' => [
                 'tooltip' => [
@@ -81,7 +109,7 @@ class StockPriceChart extends ApexChartWidget
                 ],
             ],
             'annotations' => [
-                'xaxis' => $trades->toArray(),
+                'points' => $pointAnnotations,
             ],
         ];
     }

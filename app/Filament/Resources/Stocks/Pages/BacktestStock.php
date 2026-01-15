@@ -226,20 +226,31 @@ class BacktestStock extends Page implements HasForms
                 'x' => $p->date->toDateString(),
                 'y' => [(float)$p->open_price, (float)$p->high_price, (float)$p->low_price, (float)$p->close_price]
             ])->toArray(),
-            'annotations' => collect($trades)->map(fn($trade) => [
-                'x' => (new \DateTime($trade['date']))->getTimestamp() * 1000,
-                'borderColor' => $trade['type'] === 'buy' ? '#00E396' : '#FF4560',
-                'label' => [
-                    'borderColor' => $trade['type'] === 'buy' ? '#00E396' : '#FF4560',
-                    'style' => [
-                        'color' => '#fff',
-                        'background' => $trade['type'] === 'buy' ? '#00E396' : '#FF4560',
-                        'fontSize' => '10px',
-                        'fontWeight' => 'bold',
+            'annotations' => collect($trades)->map(function ($trade) {
+                $color = $trade['type'] === 'buy' ? '#00E396' : '#FF4560';
+                return [
+                    'x' => $trade['date'],
+                    'y' => (float) $trade['price'],
+                    'marker' => [
+                        'size' => 2,
+                        'fillColor' => $color,
+                        'strokeColor' => '#fff',
+                        'strokeWidth' => 1,
+                        'shape' => 'circle'
                     ],
-                    'text' => str($trade['type'])->substr(0, 1)->upper() . ' ' . number_format($trade['price'], 3)
-                ]
-            ])->values()->toArray(),
+                    'label' => [
+                        'borderColor' => $color,
+                        'style' => [
+                            'color' => '#fff',
+                            'background' => $color,
+                            'fontSize' => '10px',
+                            'fontWeight' => 'bold',
+                        ],
+                        'text' => ($trade['type'] === 'buy' ? 'B ' : 'S ') . number_format($trade['price'], 3),
+                        'offsetY' => -10
+                    ]
+                ];
+            })->values()->toArray(),
         ];
     }
 }
