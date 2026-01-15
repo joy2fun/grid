@@ -21,6 +21,13 @@ class DayPrice extends Model
         'volume',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'date' => 'date',
+        ];
+    }
+
     public function stock()
     {
         return $this->belongsTo(Stock::class);
