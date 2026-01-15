@@ -1,11 +1,13 @@
 {
     "agents": [
         "claude_code",
-        "gemini"
+        "gemini",
+        "opencode"
     ],
     "editors": [
         "claude_code",
         "gemini",
+        "opencode",
         "vscode"
     ],
     "guidelines": [

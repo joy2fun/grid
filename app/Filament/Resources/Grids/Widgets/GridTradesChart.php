@@ -19,6 +19,10 @@ class GridTradesChart extends ApexChartWidget
 
     public ?Model $record = null;
 
+    protected static ?int $sort = 1;
+
+    protected string|int|array $columnSpan = 'full';
+
     protected function getOptions(): array
     {
         if (! $this->record) {
@@ -52,7 +56,7 @@ class GridTradesChart extends ApexChartWidget
             ->map(function ($trade) {
                 $color = $trade->side === 'buy' ? '#00E396' : '#FF4560'; // Green for buy, Red for sell
                 return [
-                    'x' => $trade->executed_at->timestamp * 1000, // Unix timestamp in ms
+                    'x' => $trade->executed_at->startOfDay()->timestamp * 1000, // Unix timestamp in ms
                     'borderColor' => $color,
                     'label' => [
                         'borderColor' => $color,

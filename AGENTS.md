@@ -1,3 +1,212 @@
+# AGENTS.md - Development Guidelines for Agentic Coding
+
+This file contains essential guidelines and commands for agentic coding agents working in this Laravel 12 + Filament 4 application.
+
+## Project Overview
+- **Framework**: Laravel 12 with PHP 8.3.22
+- **UI**: Filament 4 (admin panel), Livewire 3, Tailwind CSS 4
+- **Testing**: PHPUnit 11
+- **Code Style**: Laravel Pint 1
+- **Frontend**: Vite 7
+
+## Essential Commands
+
+### Testing Commands
+```bash
+# Run all tests
+php artisan test --compact
+
+# Run single test file
+php artisan test --compact tests/Feature/TradeResourceTest.php
+
+# Run specific test method
+php artisan test --compact --filter=test_can_render_trade_resource_index_page
+
+# Create new test
+php artisan make:test --phpunit Feature/MyFeatureTest
+php artisan make:test --phpunit Unit/MyUnitTest --unit
+```
+
+### Code Quality Commands
+```bash
+# Format code (REQUIRED before finalizing changes)
+vendor/bin/pint --dirty
+
+# Full format (if needed)
+vendor/bin/pint
+```
+
+### Development Commands
+```bash
+# Full development stack (server, queue, logs, vite)
+composer run dev
+
+# Build frontend assets
+npm run build
+
+# Development frontend
+npm run dev
+
+# Setup new environment
+composer run setup
+```
+
+### Laravel Artisan Commands
+```bash
+# Create new files (use --no-interaction flag)
+php artisan make:model ModelName --migration --factory --seeder --no-interaction
+php artisan make:controller ControllerName --no-interaction
+php artisan make:livewire Posts\CreatePost --no-interaction
+php artisan make:class ClassName --no-interaction
+php artisan make:migration create_table_name --no-interaction
+
+# Filament specific commands
+php artisan make:filament-resource ResourceName --generate --no-interaction
+```
+
+## Code Style Guidelines
+
+### PHP Standards
+- **Always use curly braces** for control structures, even single-line blocks
+- **Explicit return type declarations** required for all methods/functions
+- **Constructor property promotion** for PHP 8+ (public/protected/private properties in __construct)
+- **No empty constructors** unless private
+- **Prefer PHPDoc blocks** over inline comments for complex logic
+
+### Naming Conventions
+- **Variables/Methods**: `camelCase` with descriptive names (e.g., `isRegisteredForDiscounts`, not `discount()`)
+- **Classes**: `PascalCase`
+- **Enums**: `TitleCase` keys (e.g., `FavoritePerson`, `BestLake`)
+- **Files**: Match class name exactly
+
+### Import Organization
+- Group imports alphabetically:
+  1. External libraries (Illuminate, Filament, etc.)
+  2. Application imports (App\)
+  3. Use statements for traits
+
+### Laravel-Specific Patterns
+
+#### Models
+- Use `casts()` method instead of `$casts` property (follow existing model conventions)
+- Proper Eloquent relationships with return type hints
+- Use factories for test data creation
+
+#### Controllers
+- **Always use Form Request classes** for validation (never inline validation)
+- Check sibling files for array vs string validation rule format
+
+#### Database
+- **Prefer Eloquent over raw queries** - use `Model::query()` instead of `DB::`
+- **Prevent N+1 problems** with eager loading
+- Include all column attributes when modifying migrations in Laravel 12
+
+#### Testing
+- **Must use PHPUnit** (convert any Pest tests found)
+- Test all paths: happy, failure, and edge cases
+- Use `Livewire::test()` for Livewire components
+- Authenticate before accessing protected routes in tests
+
+### Filament 4 Specific Guidelines
+
+#### Structure
+- Resources: `app/Filament/Resources/`
+- Organize components:
+  - `Schemas/Components/` - Form schema components
+  - `Tables/Columns/` - Table column definitions
+  - `Tables/Filters/` - Table filter definitions
+  - `Actions/` - Action classes
+
+#### Patterns
+- Use `relationship()` method for select/repeater components when possible
+- Static `make()` methods for component initialization
+- File visibility defaults to `private` in v4
+- Defer filters behavior is now default
+
+#### Testing Filament
+```php
+// Example Filament test pattern
+livewire(CreateTrade::class)
+    ->fillForm(['field' => 'value'])
+    ->call('create')
+    ->assertNotified()
+    ->assertRedirect();
+
+assertDatabaseHas(Trade::class, ['field' => 'value']);
+```
+
+### Livewire 3 Guidelines
+- Namespace: `App\Livewire` (not `App\Http\Livewire`)
+- Use `wire:model.live` for real-time updates
+- Use `$this->dispatch()` for events (not `emit`)
+- Single root element required
+- Add `wire:key` in loops: `wire:key="item-{{ $item->id }}"`
+
+## Error Handling & Best Practices
+
+### Validation
+- Form Request classes for all validation
+- Include custom error messages
+- Follow existing validation patterns in sibling files
+
+### Authorization
+- Use Laravel's built-in features (gates, policies, Sanctum)
+- Always validate authorization in Livewire actions
+
+### Environment & Config
+- Use `config('app.name')` not `env('APP_NAME')` outside config files
+- Environment variables only in config files
+
+### Performance
+- Use queued jobs (`ShouldQueue`) for time-consuming operations
+- Implement eager loading to prevent N+1 queries
+- Laravel 12 native limiting: `$query->latest()->limit(10)`
+
+## Critical Rules
+1. **Run `vendor/bin/pint --dirty`** before finalizing any changes
+2. **Never use env() outside config files**
+3. **Always use Form Request classes** for validation
+4. **Prefer Eloquent over raw DB queries**
+5. **Follow existing file structure** - no new base folders without approval
+6. **Don't modify dependencies** without approval
+7. **Use descriptive naming** - no abbreviations unless widely understood
+
+## Frontend Integration
+- If UI changes aren't visible, user may need to run `npm run build` or `npm run dev`
+- Alpine.js is included with Livewire 3 (don't include manually)
+- Vite 7 handles asset bundling
+
+## File Structure (Key Directories)
+```
+app/
+├── Models/                    # Eloquent models
+├── Filament/Resources/        # Filament admin resources
+├── Http/Controllers/          # HTTP controllers
+├── Livewire/                  # Livewire components
+├── Services/                  # Business logic services
+├── Utilities/                 # Helper classes
+└── Console/Commands/          # Artisan commands
+
+tests/
+├── Feature/                   # Feature tests
+└── Unit/                      # Unit tests
+```
+
+## Quick Reference
+
+Before making changes:
+1. Check existing files for patterns
+2. Use `php artisan list` to verify command parameters
+3. Follow Laravel 12 and Filament 4 conventions
+4. Test thoroughly with PHPUnit
+
+After making changes:
+1. Run `vendor/bin/pint --dirty`
+2. Run relevant tests
+3. Verify frontend builds if needed
+
+===
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

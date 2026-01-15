@@ -40,6 +40,27 @@ class StockPriceChart extends ApexChartWidget
                 ];
             });
 
+        $trades = \App\Models\Trade::query()
+            ->where('stock_id', $this->stockId)
+            ->orderBy('executed_at')
+            ->get()
+            ->map(function ($trade) {
+                $color = $trade->side === 'buy' ? '#00E396' : '#FF4560'; // Green for buy, Red for sell
+                $dayStart = $trade->executed_at->copy()->startOfDay()->timestamp * 1000; // Start of day in ms
+                return [
+                    'x' => $dayStart,
+                    'borderColor' => $color,
+                    'label' => [
+                        'borderColor' => $color,
+                        'style' => [
+                            'color' => '#fff',
+                            'background' => $color,
+                        ],
+                        'text' => ucfirst($trade->side) . ': $' . number_format($trade->price, 2),
+                    ],
+                ];
+            });
+
         return [
             'chart' => [
                 'type' => 'candlestick',
@@ -58,6 +79,9 @@ class StockPriceChart extends ApexChartWidget
                 'tooltip' => [
                     'enabled' => true,
                 ],
+            ],
+            'annotations' => [
+                'xaxis' => $trades->toArray(),
             ],
         ];
     }
