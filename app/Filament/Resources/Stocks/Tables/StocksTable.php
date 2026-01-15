@@ -42,6 +42,26 @@ class StocksTable
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
                     ->modalContent(fn (Stock $record) => view('filament.resources.stocks.stock-chart-modal', ['record' => $record])),
+                Action::make('sync_price')
+                    ->label('Sync Price')
+                    ->icon('heroicon-o-arrow-path')
+                    ->action(function (Stock $record, \App\Services\StockService $stockService) {
+                        $result = $stockService->syncPriceByStockCode($record->code);
+                        
+                        if ($result['success']) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Price Synced')
+                                ->body("Successfully synced {$result['processed_count']} records.")
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Sync Failed')
+                                ->body('Failed to sync stock prices.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
