@@ -103,19 +103,19 @@
                         init() {
                             let chartData = {{ json_encode($results['chart_data']) }};
                             let annotations = {{ json_encode($results['annotations']) }};
-                            
+
                             // Extract dates for category labels
                             let categories = chartData.map(item => item.x);
-                            
+
                             // Convert annotations to use date strings and points
                             let pointAnnotations = annotations.map(ann => {
                                 let dateStr = new Date(ann.x).toISOString().split('T')[0];
                                 let index = categories.indexOf(dateStr);
-                                
+
                                 // Find the y value (close price) for this date
                                 let dataPoint = chartData[index];
                                 let yValue = dataPoint ? dataPoint.y[3] : 0; // [3] is close price
-                                
+
                                 return {
                                     x: dateStr, // Use date string instead of index
                                     y: yValue,
@@ -133,7 +133,7 @@
                                     }
                                 };
                             });
-                            
+
                             let options = {
                                 series: [{
                                     data: chartData.map(item => ({
@@ -201,7 +201,7 @@
                     <div x-ref="chart"></div>
                  </div>
             </div>
-            
+
             <div style="margin-top: 2rem;">
                 <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; color: #111827;">Trade Log & Cash Flows</h3>
                 <div class="fi-ta-ctn divide-y divide-gray-200 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 dark:divide-white/10 dark:bg-gray-900 dark:ring-white/10">
@@ -299,7 +299,7 @@
                 </div>
                 <div style="margin-top: 1rem; padding: 1rem; background: #eff6ff; border-radius: 0.5rem; border: 1px solid #bfdbfe;">
                     <p style="font-size: 0.875rem; color: #1e40af;">
-                        <strong>Note:</strong> Cash flows show the actual money movement for XIRR calculation. 
+                        <strong>Note:</strong> Cash flows show the actual money movement for XIRR calculation.
                         Negative values (red) = money out (buys), Positive values (green) = money in (sells/final position).
                     </p>
                 </div>

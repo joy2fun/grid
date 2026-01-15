@@ -112,11 +112,11 @@ class BacktestStock extends Page implements HasForms
                 'type' => 'buy',
                 'price' => $referencePrice,
                 'shares' => $initialShares,
-                'date' => $firstDate,
+                'date' => $firstDate->toDateString(),
             ];
 
             $cashFlows[] = -$cost;
-            $dates[] = $firstDate;
+            $dates[] = $firstDate->toDateString();
         }
 
         $lastTradePrice = $referencePrice;
@@ -154,11 +154,11 @@ class BacktestStock extends Page implements HasForms
                         'type' => 'buy',
                         'price' => $currentPrice,
                         'shares' => $buyShares,
-                        'date' => $date,
+                        'date' => $date->toDateString(),
                     ];
 
                     $cashFlows[] = -$cost;
-                    $dates[] = $date;
+                    $dates[] = $date->toDateString();
                 }
             }
             // SELL condition: price rose by interval percentage
@@ -178,11 +178,11 @@ class BacktestStock extends Page implements HasForms
                             'type' => 'sell',
                             'price' => $currentPrice,
                             'shares' => $sellShares,
-                            'date' => $date,
+                            'date' => $date->toDateString(),
                         ];
 
                         $cashFlows[] = $revenue;
-                        $dates[] = $date;
+                        $dates[] = $date->toDateString();
                      }
                 }
             }
@@ -195,7 +195,7 @@ class BacktestStock extends Page implements HasForms
         // Add final "liquidation" for XIRR calculation
         if ($holdingValue > 0) {
             $cashFlows[] = $holdingValue;
-            $dates[] = $prices->last()->date;
+            $dates[] = $prices->last()->date->toDateString();
         }
 
         // Calculate XIRR
@@ -223,8 +223,8 @@ class BacktestStock extends Page implements HasForms
             'trades' => $trades,
             'cash_flows' => $cashFlowDetails,
             'chart_data' => $prices->map(fn($p) => [
-                'x' => $p->date,
-                'y' => [$p->open_price, $p->high_price, $p->low_price, $p->close_price]
+                'x' => $p->date->toDateString(),
+                'y' => [(float)$p->open_price, (float)$p->high_price, (float)$p->low_price, (float)$p->close_price]
             ])->toArray(),
             'annotations' => collect($trades)->map(fn($trade) => [
                 'x' => (new \DateTime($trade['date']))->getTimestamp() * 1000,
