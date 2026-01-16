@@ -27,6 +27,12 @@ class StocksTable
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('holding.quantity')
+                    ->label('Holding')
+                    ->numeric(3)
+                    ->default(0)
+                    ->sortable(),
+
                 TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()

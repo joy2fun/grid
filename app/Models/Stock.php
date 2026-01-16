@@ -18,4 +18,9 @@ class Stock extends Model
     {
         return $this->hasMany(DayPrice::class);
     }
+
+    public function holding()
+    {
+        return $this->hasOne(Holding::class);
+    }
 }
