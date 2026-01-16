@@ -1,0 +1,53 @@
+name: build & deploy
+
+on:
+  push:
+    branches: ['main']
+
+env:
+  project: grid
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Login to aliyun
+        uses: aliyun/acr-login@v1
+        with:
+          login-server: ${{ secrets.REGISTRY_HOST }}
+          username: '${{ secrets.REGISTRY_USERNAME }}'
+          password: '${{ secrets.REGISTRY_PASSWORD }}'
+
+      - name: build & push to aliyun
+        run: |
+          docker build -t ${{ secrets.REGISTRY_HOST }}/dysh/mirror:${{ env.project }} .
+          docker push ${{ secrets.REGISTRY_HOST }}/dysh/mirror:${{ env.project }}
+
+      - name: Dispatch deploy event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: deploy
+          repository: joy2fun/ansible
+          token: ${{ secrets.PAT }}
+          client-payload: |-
+            {
+              "host": "w1",
+              "project": "${{ env.project }}",
+              "type": "filament",
+              "branch": "${{ github.ref_name }}"
+            }
