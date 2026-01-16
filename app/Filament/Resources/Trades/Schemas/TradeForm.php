@@ -26,8 +26,7 @@ class TradeForm
                     ->required(),
                 TextInput::make('price')
                     ->required()
-                    ->numeric()
-                    ->prefix('$'),
+                    ->prefix('¥'),
                 TextInput::make('quantity')
                     ->required()
                     ->numeric(),

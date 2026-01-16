@@ -13,8 +13,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class HoldingResource extends Resource
@@ -52,13 +52,13 @@ class HoldingResource extends Resource
                     ->sortable()
                     ->searchable(['name', 'code']),
                 TextColumn::make('quantity')
-                    ->numeric(3)
+                    ->numeric(0)
                     ->sortable(),
                 TextColumn::make('average_cost')
-                    ->money('USD')
+                    ->numeric(3)
                     ->sortable(),
                 TextColumn::make('total_cost')
-                    ->money('USD')
+                    ->numeric(0)
                     ->sortable(),
                 TextColumn::make('updated_at')
                     ->dateTime()

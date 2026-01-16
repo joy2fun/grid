@@ -3,7 +3,7 @@
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     @endpush
 
-    <form wire:submit="runBacktest" class="space-y-6">
+    <form wire:submit="runBacktest" class="fi-sc-form space-y-6">
         {{ $this->form }}
 
         <div class="flex justify-end">
@@ -37,16 +37,16 @@
                     </div>
                     <div style="padding: 1.5rem;">
                         <div style="font-size: 2.25rem; font-weight: 700; color: {{ $results['total_profit'] >= 0 ? '#16a34a' : '#dc2626' }};">
-                            ${{ number_format($results['total_profit'], 3) }}
+                            ¥{{ number_format($results['total_profit'], 0) }}
                         </div>
                         <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; font-size: 0.75rem; color: #6b7280;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                                 <span>Cash:</span>
-                                <span style="font-weight: 600;">${{ number_format($results['net_cash'], 3) }}</span>
+                                <span style="font-weight: 600;">¥{{ number_format($results['net_cash'], 3) }}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
                                 <span>Holdings:</span>
-                                <span style="font-weight: 600;">${{ number_format($results['holding_value'], 3) }}</span>
+                                <span style="font-weight: 600;">¥{{ number_format($results['holding_value'], 3) }}</span>
                             </div>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
                     </div>
                     <div style="padding: 1.5rem;">
                         <div style="font-size: 2.25rem; font-weight: 700; color: #dc2626;">
-                            ${{ number_format($results['max_cash_occupied'], 3) }}
+                            ¥{{ number_format($results['max_cash_occupied'], 0) }}
                         </div>
                         <div style="margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280;">
                             Peak Capital Needed
@@ -86,7 +86,7 @@
                     </div>
                     <div style="padding: 1.5rem;">
                         <div style="font-size: 2.25rem; font-weight: 700; color: #111827;">
-                            ${{ number_format($results['final_price'], 3) }}
+                            ¥{{ number_format($results['final_price'], 3) }}
                         </div>
                         <div style="margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280;">
                             Position Value
@@ -158,6 +158,11 @@
                                     decimalsInFloat: 3,
                                     tooltip: {
                                         enabled: true
+                                    },
+                                    labels: {
+                                        formatter: function(val) {
+                                            return '¥' + val.toFixed(3);
+                                        }
                                     }
                                 },
                                 tooltip: {
@@ -214,7 +219,7 @@
                                     </td>
                                     <td class="fi-ta-cell p-0 first-of-type:ps-1 last-of-type:pe-1 sm:first-of-type:ps-3 sm:last-of-type:pe-3">
                                         <div class="fi-ta-col-wrp px-3 py-4">
-                                            <span class="fi-badge uppercase {{ $trade['type'] === 'buy' ? 'fi-color-success' : 'fi-color-danger' }}">
+                                            <span class="fi-badge fi-color uppercase {{ $trade['type'] === 'buy' ? 'fi-color-success' : 'fi-color-danger' }}">
                                                 {{ $trade['type'] }}
                                             </span>
                                         </div>
@@ -222,7 +227,7 @@
                                     <td class="fi-ta-cell p-0 first-of-type:ps-1 last-of-type:pe-1 sm:first-of-type:ps-3 sm:last-of-type:pe-3">
                                         <div class="fi-ta-col-wrp px-3 py-4">
                                             <div class="fi-ta-text-item text-sm text-gray-950 dark:text-white">
-                                                ${{ number_format($trade['price'], 3) }}
+                                                ¥{{ number_format($trade['price'], 3) }}
                                             </div>
                                         </div>
                                     </td>
@@ -236,7 +241,7 @@
                                     <td class="fi-ta-cell p-0 first-of-type:ps-1 last-of-type:pe-1 sm:first-of-type:ps-3 sm:last-of-type:pe-3">
                                         <div class="fi-ta-col-wrp px-3 py-4">
                                             <div class="fi-ta-text-item text-sm font-mono {{ $results['cash_flows'][$index]['amount'] < 0 ? 'text-danger-600 dark:text-danger-400' : 'text-success-600 dark:text-success-400' }}">
-                                                ${{ number_format($results['cash_flows'][$index]['amount'], 3) }}
+                                                ¥{{ number_format($results['cash_flows'][$index]['amount'], 3) }}
                                             </div>
                                         </div>
                                     </td>
@@ -254,18 +259,18 @@
                                     </td>
                                     <td class="fi-ta-cell p-0 first-of-type:ps-1 last-of-type:pe-1 sm:first-of-type:ps-3 sm:last-of-type:pe-3" colspan="3">
                                         <div class="fi-ta-col-wrp px-3 py-4">
-                                            <span class="fi-badge fi-color-primary">
+                                            <span class="fi-badge fi-color fi-color-primary">
                                                 FINAL POSITION
                                             </span>
                                             <span style="margin-left: 0.5rem; font-size: 0.875rem; color: #6b7280;">
-                                                {{ number_format($results['final_shares']) }} shares @ ${{ number_format($results['final_price'], 3) }}
+                                                {{ number_format($results['final_shares']) }} shares @ ¥{{ number_format($results['final_price'], 3) }}
                                             </span>
                                         </div>
                                     </td>
                                     <td class="fi-ta-cell p-0 first-of-type:ps-1 last-of-type:pe-1 sm:first-of-type:ps-3 sm:last-of-type:pe-3">
                                         <div class="fi-ta-col-wrp px-3 py-4">
                                             <div class="fi-ta-text-item text-sm font-mono text-success-600 dark:text-success-400" style="font-weight: 600;">
-                                                ${{ number_format($results['cash_flows'][count($results['cash_flows']) - 1]['amount'], 3) }}
+                                                ¥{{ number_format($results['cash_flows'][count($results['cash_flows']) - 1]['amount'], 3) }}
                                             </div>
                                         </div>
                                     </td>

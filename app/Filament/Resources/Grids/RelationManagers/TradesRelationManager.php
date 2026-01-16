@@ -37,8 +37,7 @@ class TradesRelationManager extends RelationManager
                     ->required(),
                 TextInput::make('price')
                     ->required()
-                    ->numeric()
-                    ->prefix('$'),
+                    ->prefix('¥'),
                 TextInput::make('quantity')
                     ->required()
                     ->numeric(),
@@ -63,10 +62,10 @@ class TradesRelationManager extends RelationManager
                     })
                     ->searchable(),
                 TextColumn::make('price')
-                    ->money()
+                    ->numeric(3)
                     ->sortable(),
                 TextColumn::make('quantity')
-                    ->numeric()
+                    ->numeric(0)
                     ->sortable(),
                 TextColumn::make('executed_at')
                     ->dateTime()

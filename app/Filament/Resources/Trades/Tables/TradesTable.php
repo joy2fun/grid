@@ -28,10 +28,10 @@ class TradesTable
                     })
                     ->searchable(),
                 TextColumn::make('price')
-                    ->money()
+                    ->numeric(3)
                     ->sortable(),
                 TextColumn::make('quantity')
-                    ->numeric()
+                    ->numeric(0)
                     ->sortable(),
                 TextColumn::make('executed_at')
                     ->dateTime()

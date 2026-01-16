@@ -3,34 +3,32 @@
 namespace App\Filament\Resources\Stocks\Pages;
 
 use App\Filament\Resources\Stocks\StockResource;
-use App\Models\Stock;
 use App\Utilities\Helper;
-use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class BacktestStock extends Page implements HasForms
 {
-    use InteractsWithRecord;
     use InteractsWithForms;
+    use InteractsWithRecord;
 
     protected static string $resource = StockResource::class;
 
     protected string $view = 'filament.resources.stocks.pages.backtest-stock';
 
     public ?array $data = [];
+
     public $results = null;
 
-    public function mount(int | string $record): void
+    public function mount(int|string $record): void
     {
         $this->record = $this->resolveRecord($record);
         $this->form->fill([
@@ -51,8 +49,7 @@ class BacktestStock extends Page implements HasForms
                         TextInput::make('trade_amount')
                             ->numeric()
                             ->required()
-                            ->default(10000)
-                            ->prefix('$'),
+                            ->prefix('¥'),
                         TextInput::make('interval')
                             ->numeric()
                             ->required()
@@ -84,6 +81,7 @@ class BacktestStock extends Page implements HasForms
 
         if ($prices->isEmpty()) {
             Notification::make()->title('No data found for this period.')->warning()->send();
+
             return;
         }
 
@@ -164,11 +162,11 @@ class BacktestStock extends Page implements HasForms
             // SELL condition: price rose by interval percentage
             elseif ($percentChange >= $intervalPercent) {
                 if ($shares > 0) {
-                     $rawShares = $tradeAmount / $currentPrice;
-                     $sellShares = round($rawShares / 100) * 100;
-                     $sellShares = min($sellShares, $shares);
+                    $rawShares = $tradeAmount / $currentPrice;
+                    $sellShares = round($rawShares / 100) * 100;
+                    $sellShares = min($sellShares, $shares);
 
-                     if ($sellShares > 0) {
+                    if ($sellShares > 0) {
                         $revenue = $sellShares * $currentPrice;
                         $cash += $revenue;
                         $shares -= $sellShares;
@@ -183,7 +181,7 @@ class BacktestStock extends Page implements HasForms
 
                         $cashFlows[] = $revenue;
                         $dates[] = $date->toDateString();
-                     }
+                    }
                 }
             }
         }
@@ -222,12 +220,13 @@ class BacktestStock extends Page implements HasForms
             'final_price' => $finalPrice,
             'trades' => $trades,
             'cash_flows' => $cashFlowDetails,
-            'chart_data' => $prices->map(fn($p) => [
+            'chart_data' => $prices->map(fn ($p) => [
                 'x' => $p->date->toDateString(),
-                'y' => [(float)$p->open_price, (float)$p->high_price, (float)$p->low_price, (float)$p->close_price]
+                'y' => [(float) $p->open_price, (float) $p->high_price, (float) $p->low_price, (float) $p->close_price],
             ])->toArray(),
             'annotations' => collect($trades)->map(function ($trade) {
                 $color = $trade['type'] === 'buy' ? '#00E396' : '#FF4560';
+
                 return [
                     'x' => $trade['date'],
                     'y' => (float) $trade['price'],
@@ -236,7 +235,7 @@ class BacktestStock extends Page implements HasForms
                         'fillColor' => $color,
                         'strokeColor' => '#fff',
                         'strokeWidth' => 1,
-                        'shape' => 'circle'
+                        'shape' => 'circle',
                     ],
                     'label' => [
                         'borderColor' => $color,
@@ -246,9 +245,9 @@ class BacktestStock extends Page implements HasForms
                             'fontSize' => '10px',
                             'fontWeight' => 'bold',
                         ],
-                        'text' => ($trade['type'] === 'buy' ? 'B ' : 'S ') . number_format($trade['price'], 3),
-                        'offsetY' => -10
-                    ]
+                        'text' => ($trade['type'] === 'buy' ? 'B ' : 'S ').number_format($trade['price'], 3),
+                        'offsetY' => -10,
+                    ],
                 ];
             })->values()->toArray(),
         ];

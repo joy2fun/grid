@@ -29,7 +29,7 @@ class StocksTable
 
                 TextColumn::make('holding.quantity')
                     ->label('Holding')
-                    ->numeric(3)
+                    ->numeric(0)
                     ->default(0)
                     ->sortable(),
 
@@ -58,7 +58,7 @@ class StocksTable
                     ->icon('heroicon-o-arrow-path')
                     ->action(function (Stock $record, \App\Services\StockService $stockService) {
                         $result = $stockService->syncPriceByStockCode($record->code);
-                        
+
                         if ($result['success']) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Price Synced')
