@@ -28,7 +28,7 @@ class HoldingResource extends Resource
         return $schema
             ->components([
                 Select::make('stock_id')
-                    ->relationship('stock', 'code')
+                    ->relationship('stock', 'name')
                     ->required(),
                 TextInput::make('quantity')
                     ->numeric()
@@ -46,10 +46,11 @@ class HoldingResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('stock.code')
+                TextColumn::make('stock.name')
                     ->label('Stock')
+                    ->description(fn (Holding $record): string => $record->stock->code)
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(['name', 'code']),
                 TextColumn::make('quantity')
                     ->numeric(3)
                     ->sortable(),
