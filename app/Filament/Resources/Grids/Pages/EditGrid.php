@@ -17,10 +17,17 @@ class EditGrid extends EditRecord
         ];
     }
 
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Resources\Grids\Widgets\GridStatsWidget::class,
+            \App\Filament\Resources\Grids\Widgets\GridTradesChart::class,
+        ];
+    }
+
     protected function getFooterWidgets(): array
     {
         return [
-            \App\Filament\Resources\Grids\Widgets\GridTradesChart::class,
         ];
     }
 }

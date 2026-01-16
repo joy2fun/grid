@@ -17,7 +17,9 @@ class GridFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => $this->faker->word(),
+            'initial_amount' => 10000,
+            'grid_interval' => 5.0,
         ];
     }
 }

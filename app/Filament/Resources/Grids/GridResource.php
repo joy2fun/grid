@@ -34,7 +34,7 @@ class GridResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TradesRelationManager::class,
         ];
     }
 
