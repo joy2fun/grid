@@ -11,6 +11,7 @@ use Filament\Actions\DissociateAction;
 use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -26,9 +27,8 @@ class TradesRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                Select::make('stock_id')
-                    ->relationship('stock', 'name')
-                    ->required(),
+                Hidden::make('stock_id')
+                    ->default(fn (RelationManager $livewire): int => $livewire->getOwnerRecord()->stock_id),
                 Select::make('side')
                     ->options([
                         'buy' => 'Buy',
@@ -42,7 +42,8 @@ class TradesRelationManager extends RelationManager
                     ->required()
                     ->numeric(),
                 DateTimePicker::make('executed_at')
-                    ->required(),
+                    ->required()
+                    ->default(now()),
             ]);
     }
 
@@ -50,10 +51,8 @@ class TradesRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('id')
+            ->paginated(false)
             ->columns([
-                TextColumn::make('stock.name')
-                    ->label('Stock')
-                    ->sortable(),
                 TextColumn::make('side')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -86,8 +85,8 @@ class TradesRelationManager extends RelationManager
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DissociateBulkAction::make(),
-                    DeleteBulkAction::make(),
+                    // DissociateBulkAction::make(),
+                    // DeleteBulkAction::make(),
                 ]),
             ]);
     }

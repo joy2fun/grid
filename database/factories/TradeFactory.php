@@ -17,7 +17,11 @@ class TradeFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'stock_id' => \App\Models\Stock::factory(),
+            'side' => fake()->randomElement(['buy', 'sell']),
+            'price' => fake()->randomFloat(2, 10, 100),
+            'quantity' => fake()->numberBetween(100, 1000),
+            'executed_at' => now(),
         ];
     }
 }
