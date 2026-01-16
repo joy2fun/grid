@@ -7,6 +7,9 @@ WORKDIR /var/www/html
 # Switch to root to install dependencies and set permissions
 USER root
 
+# Install PHP extensions
+RUN install-php-extensions intl
+
 # Install system dependencies if any are needed beyond the base image
 # RUN apt-get update && apt-get install -y ...
 
