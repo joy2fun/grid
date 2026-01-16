@@ -121,6 +121,44 @@ class StockService
     }
 
     /**
+     * Update realtime prices from the provided realtime data
+     *
+     * @param  array  $realtimeData  Associative array of stock data indexed by code
+     */
+    public function updateRealtimePrices(array $realtimeData): void
+    {
+        $today = now()->format('Y-m-d');
+        $dayPricesData = [];
+
+        foreach ($realtimeData as $code => $data) {
+            if (! $data || $data['timestamp'] !== $today) {
+                continue;
+            }
+
+            $stock = Stock::where('code', $code)->first();
+            if (! $stock) {
+                continue;
+            }
+
+            $dayPricesData[] = [
+                'stock_id' => $stock->id,
+                'date' => $today,
+                'open_price' => $data['open_price'],
+                'close_price' => $data['current_price'],
+                'high_price' => $data['high_price'],
+                'low_price' => $data['low_price'],
+                'volume' => $data['volume'] ?? 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        if (! empty($dayPricesData)) {
+            $this->bulkUpsertDayPrices($dayPricesData);
+        }
+    }
+
+    /**
      * Extract stock name from API response
      *
      * @param  array  $data  The API response data

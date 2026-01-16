@@ -102,6 +102,7 @@ class StockPriceService
                     'low_price' => $lowPrice,  // Low price at index 34
                     'close_price' => $currentPrice,  // Close price is the same as current
                     'open_price' => $openPrice,  // Open price at index 5
+                    'volume' => self::validateNumericValue($dataArray[6] ?? null), // Volume at index 6
                     'timestamp' => self::convertToDatestring($dataArray[30] ?? null),
                 ];
             } else {
@@ -133,11 +134,12 @@ class StockPriceService
         return null;
     }
 
-    public static function convertToDatestring(string|null $dateString)
+    public static function convertToDatestring(?string $dateString)
     {
         if ($dateString === null) {
             return null;
         }
+
         return \DateTime::createFromFormat('YmdHis', $dateString)->format('Y-m-d');
     }
 }
