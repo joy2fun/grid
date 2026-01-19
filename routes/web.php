@@ -6,6 +6,10 @@ Route::get('/', function () {
     return 'It works!';
 });
 
-Route::any('/ado', function () {
+Route::get('/login', function () {
+    return 'login';
+})->name('login');
+
+Route::any(env('ADMINNEO_ROUTE', '/ado'), function () {
     require '../adminneo.php';
 })->middleware('auth')->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
