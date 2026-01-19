@@ -20,18 +20,14 @@ class StocksTable
                 TextColumn::make('code')
                     ->label('Code')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable(),
 
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('holding.quantity')
-                    ->label('Holding')
-                    ->numeric(0)
-                    ->default(0)
-                    ->sortable(),
 
                 TextColumn::make('rise_percentage')
                     ->label('Rise %')
@@ -91,11 +87,6 @@ class StocksTable
                                 ->send();
                         }
                     }),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }
