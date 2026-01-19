@@ -14,6 +14,7 @@
         "leandrocfe/filament-apex-charts": "^4.0"
     },
     "require-dev": {
+        "adminneo-org/adminneo": "^5.2",
         "barryvdh/laravel-debugbar": "^3.16",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^1.8",

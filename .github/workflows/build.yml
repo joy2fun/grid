@@ -48,6 +48,6 @@ jobs:
             {
               "host": "w1",
               "project": "${{ env.project }}",
-              "type": "filament",
+              "type": "default",
               "branch": "${{ github.ref_name }}"
             }

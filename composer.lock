@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "33af8ebb47acd5bdb22cf969b6b885c4",
+    "content-hash": "a8fa4945991c745f0b7a5913456ce51d",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -8341,6 +8341,83 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "adminneo-org/adminneo",
+            "version": "v5.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/adminneo-org/adminneo.git",
+                "reference": "5592f510e955b035c61d5ed955745c2dd1eb7020"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/adminneo-org/adminneo/zipball/5592f510e955b035c61d5ed955745c2dd1eb7020",
+                "reference": "5592f510e955b035c61d5ed955745c2dd1eb7020",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": "7.1 - 8.4"
+            },
+            "require-dev": {
+                "vrana/jsshrink": "@dev",
+                "vrana/jush": "@dev",
+                "vrana/phpshrink": "@dev"
+            },
+            "suggest": {
+                "ext-bz2": "Allows bzip2 compression of data export",
+                "ext-libxml": "Allows processing responses from SimpleDB database",
+                "ext-mongodb": "Allows access to MongoDB database",
+                "ext-mysql": "Allows access to MySQL database (old driver)",
+                "ext-mysqli": "Allows access to MySQL database",
+                "ext-oci8": "Allows access to Oracle database",
+                "ext-openssl": "Allows secure encryption of login information",
+                "ext-pdo": "PDO database interface",
+                "ext-pdo_dblib": "PDO driver for MS SQL database and Sybase",
+                "ext-pdo_oci": "PDO driver for Oracle database",
+                "ext-pdo_pgsql": "PDO driver for PostgreSQL database",
+                "ext-pdo_sqlite": "PDO driver for SQLite database",
+                "ext-pgsql": "Allows access to PostgreSQL database",
+                "ext-simplexml": "Allows access to SimpleDB database",
+                "ext-sqlite3": "Allows access to SQLite database",
+                "ext-sqlsrv": "Allows access to MS SQ database",
+                "ext-suhosin": "Enhace CSRF protection",
+                "ext-zip": "Allows ZIP compression of data export",
+                "ext-zlib": "Allows gzip compression of data export"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0",
+                "GPL-2.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "Peter Knut"
+                },
+                {
+                    "name": "Jakub Vrána",
+                    "homepage": "https://www.vrana.cz/"
+                }
+            ],
+            "description": "Database management in a single PHP file.",
+            "homepage": "https://github.com/adminneo-org/adminneo",
+            "keywords": [
+                "database"
+            ],
+            "support": {
+                "forum": "https://github.com/adminneo-org/adminneo/discussions",
+                "issues": "https://github.com/adminneo-org/adminneo/issues",
+                "source": "https://github.com/adminneo-org/adminneo"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/peterpp",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-12-07T22:00:50+00:00"
+        },
         {
             "name": "barryvdh/laravel-debugbar",
             "version": "v3.16.3",
