@@ -46,7 +46,7 @@ class SyncStockPriceCommand extends Command
                 return 1;
             }
         } catch (\Exception $e) {
-            $this->error("Error syncing stock prices for {$stockCode}: ".$e->getMessage());
+            $this->error("Error syncing stock prices for {$stockCode}: " . $e->getMessage());
 
             return 1;
         }

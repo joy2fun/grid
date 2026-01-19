@@ -33,11 +33,29 @@ class StocksTable
                     ->default(0)
                     ->sortable(),
 
-                TextColumn::make('created_at')
-                    ->label('Created At')
-                    ->dateTime()
-                    ->sortable(),
+                TextColumn::make('rise_percentage')
+                    ->label('Rise %')
+                    ->getStateUsing(function (Stock $record) {
+                        $prices = $record->dayPrices->sortByDesc('date')->values();
+
+                        if ($prices->count() < 2) {
+                            return null;
+                        }
+
+                        $latest = $prices[0]->close_price;
+                        $previous = $prices[1]->close_price;
+
+                        if ($previous <= 0) {
+                            return null;
+                        }
+
+                        return (($latest - $previous) / $previous) * 100;
+                    })
+                    ->badge()
+                    ->color(fn($state) => $state >= 0 ? 'success' : 'danger')
+                    ->formatStateUsing(fn($state) => number_format($state, 2) . '%'),
             ])
+            ->modifyQueryUsing(fn($query) => $query->with(['dayPrices' => fn($q) => $q->latest('date')->limit(2)]))
             ->filters([
                 //
             ])
@@ -46,13 +64,13 @@ class StocksTable
                 Action::make('backtest')
                     ->label('Backtest')
                     ->icon('heroicon-o-presentation-chart-line')
-                    ->url(fn (Stock $record) => BacktestStock::getUrl(['record' => $record])),
+                    ->url(fn(Stock $record) => BacktestStock::getUrl(['record' => $record])),
                 Action::make('chart')
                     ->label('Price Chart')
                     ->icon('heroicon-o-chart-bar')
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
-                    ->modalContent(fn (Stock $record) => view('filament.resources.stocks.stock-chart-modal', ['record' => $record])),
+                    ->modalContent(fn(Stock $record) => view('filament.resources.stocks.stock-chart-modal', ['record' => $record])),
                 Action::make('sync_price')
                     ->label('Sync Price')
                     ->icon('heroicon-o-arrow-path')

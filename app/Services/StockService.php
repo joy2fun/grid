@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Stock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class StockService
 {
@@ -24,7 +25,7 @@ class StockService
             $response = Http::get($url);
 
             if (! $response->successful()) {
-                \Log::error("Failed to fetch stock data for {$stockCode}", [
+                Log::error("Failed to fetch stock data for {$stockCode}", [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
@@ -48,9 +49,15 @@ class StockService
 
             // Prepare data for bulk insert/update
             $dayPricesData = [];
+            $today = now()->format('Y-m-d');
             foreach ($prices as $priceData) {
                 if (count($priceData) >= 6) {
                     [$date, $openPrice, $closePrice, $highPrice, $lowPrice, $volume] = $priceData;
+
+                    // Always skip today's price as it is covered by the real-time sync command
+                    if ($date === $today) {
+                        continue;
+                    }
 
                     $dayPricesData[] = [
                         'stock_id' => $stock->id,
@@ -81,7 +88,7 @@ class StockService
 
             return ['success' => true, 'processed_count' => $processedCount];
         } catch (\Exception $e) {
-            \Log::error("Error syncing stock prices for {$stockCode}", [
+            Log::error("Error syncing stock prices for {$stockCode}", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
