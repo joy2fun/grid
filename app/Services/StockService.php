@@ -34,13 +34,11 @@ class StockService
 
             $data = $response->json();
 
-            if (! isset($data['data'][$stockCode]['qfqday'])) {
-                \Log::error("Invalid response format for stock {$stockCode}", ['data' => $data]);
+            $prices = $data['data'][$stockCode]['qfqday'] ?? $data['data'][$stockCode]['day'] ?? [];
 
+            if (! $prices) {
                 return ['success' => false, 'processed_count' => 0];
             }
-
-            $prices = $data['data'][$stockCode]['qfqday'];
 
             // Find or create the stock
             $stock = Stock::firstOrCreate(
@@ -115,7 +113,7 @@ class StockService
 
         $sql = '
             INSERT OR REPLACE INTO day_prices (stock_id, date, open_price, close_price, high_price, low_price, volume)
-            VALUES '.implode(',', $values);
+            VALUES ' . implode(',', $values);
 
         DB::statement($sql, $bindings);
     }
