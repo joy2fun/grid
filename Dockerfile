@@ -14,7 +14,7 @@ RUN install-php-extensions intl
 # RUN apt-get update && apt-get install -y ...
 
 # Copy application files
-COPY --chown=1000:1000 . .
+COPY --chown=www-data:www-data . .
 
 # Install PHP dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
