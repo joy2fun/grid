@@ -2,9 +2,7 @@
 
 namespace App\Filament\Resources\Trades;
 
-use App\Filament\Resources\Trades\Pages\CreateTrade;
-use App\Filament\Resources\Trades\Pages\EditTrade;
-use App\Filament\Resources\Trades\Pages\ListTrades;
+use App\Filament\Resources\Trades\Pages\ManageTrades;
 use App\Filament\Resources\Trades\Schemas\TradeForm;
 use App\Filament\Resources\Trades\Tables\TradesTable;
 use App\Models\Trade;
@@ -40,9 +38,7 @@ class TradeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListTrades::route('/'),
-            'create' => CreateTrade::route('/create'),
-            'edit' => EditTrade::route('/{record}/edit'),
+            'index' => ManageTrades::route('/'),
         ];
     }
 }

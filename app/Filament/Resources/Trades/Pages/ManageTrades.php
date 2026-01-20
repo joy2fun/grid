@@ -4,9 +4,9 @@ namespace App\Filament\Resources\Trades\Pages;
 
 use App\Filament\Resources\Trades\TradeResource;
 use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ManageRecords;
 
-class ListTrades extends ListRecords
+class ManageTrades extends ManageRecords
 {
     protected static string $resource = TradeResource::class;
 

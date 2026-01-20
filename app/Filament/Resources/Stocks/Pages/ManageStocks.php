@@ -4,9 +4,9 @@ namespace App\Filament\Resources\Stocks\Pages;
 
 use App\Filament\Resources\Stocks\StockResource;
 use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ManageRecords;
 
-class ListStocks extends ListRecords
+class ManageStocks extends ManageRecords
 {
     protected static string $resource = StockResource::class;
 
@@ -31,7 +31,7 @@ class ListStocks extends ListRecords
                             $stockService->updateRealtimePrices($realtimeData);
                             $processedCount += count($chunk);
                         } catch (\Exception $e) {
-                            \Illuminate\Support\Facades\Log::error('Error syncing realtime prices: ' . $e->getMessage());
+                            \Illuminate\Support\Facades\Log::error('Error syncing realtime prices: '.$e->getMessage());
                         }
                     }
 

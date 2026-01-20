@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Grids;
 
-use App\Filament\Resources\Grids\Pages\CreateGrid;
 use App\Filament\Resources\Grids\Pages\EditGrid;
 use App\Filament\Resources\Grids\Pages\ListGrids;
 use App\Filament\Resources\Grids\RelationManagers\TradesRelationManager;
@@ -42,7 +41,6 @@ class GridResource extends Resource
     {
         return [
             'index' => ListGrids::route('/'),
-            'create' => CreateGrid::route('/create'),
             'edit' => EditGrid::route('/{record}/edit'),
         ];
     }
