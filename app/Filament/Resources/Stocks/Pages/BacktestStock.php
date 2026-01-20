@@ -36,6 +36,7 @@ class BacktestStock extends Page implements HasForms
             'end_date' => Carbon::now(),
             'interval' => 5,
             'trade_amount' => 10000,
+            'lot_size' => 100,
         ]);
     }
 
@@ -61,6 +62,11 @@ class BacktestStock extends Page implements HasForms
                             ->required(),
                         DatePicker::make('end_date')
                             ->required(),
+                        TextInput::make('lot_size')
+                            ->numeric()
+                            ->required()
+                            ->default(100)
+                            ->label('Lot Size (Shares)'),
                     ]),
             ])
             ->statePath('data');
@@ -73,6 +79,7 @@ class BacktestStock extends Page implements HasForms
         $endDate = $data['end_date'];
         $intervalPercent = (float) $data['interval']; // Now a percentage (e.g., 5 for 5%)
         $tradeAmount = (float) $data['trade_amount'];
+        $lotSize = (int) ($data['lot_size'] ?? 100);
 
         $prices = $this->record->dayPrices()
             ->whereBetween('date', [$startDate, $endDate])
@@ -98,7 +105,7 @@ class BacktestStock extends Page implements HasForms
 
         // Place initial buy order at the reference price
         $rawShares = $tradeAmount / $referencePrice;
-        $initialShares = round($rawShares / 100) * 100;
+        $initialShares = $lotSize > 0 ? round($rawShares / $lotSize) * $lotSize : round($rawShares);
 
         if ($initialShares > 0) {
             $cost = $initialShares * $referencePrice;
@@ -132,9 +139,9 @@ class BacktestStock extends Page implements HasForms
             // BUY condition: price dropped by interval percentage
             if ($percentChange <= -$intervalPercent) {
                 // Determine shares to buy closest to fixed amount
-                // shares must be multiple of 100
+                // shares must be multiple of lotSize
                 $rawShares = $tradeAmount / $currentPrice;
-                $buyShares = round($rawShares / 100) * 100;
+                $buyShares = $lotSize > 0 ? round($rawShares / $lotSize) * $lotSize : round($rawShares);
 
                 if ($buyShares > 0) {
                     $cost = $buyShares * $currentPrice;
@@ -163,7 +170,7 @@ class BacktestStock extends Page implements HasForms
             elseif ($percentChange >= $intervalPercent) {
                 if ($shares > 0) {
                     $rawShares = $tradeAmount / $currentPrice;
-                    $sellShares = round($rawShares / 100) * 100;
+                    $sellShares = $lotSize > 0 ? round($rawShares / $lotSize) * $lotSize : round($rawShares);
                     $sellShares = min($sellShares, $shares);
 
                     if ($sellShares > 0) {
