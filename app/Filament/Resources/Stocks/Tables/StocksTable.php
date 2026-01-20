@@ -15,21 +15,10 @@ class StocksTable
     {
         return $table
             ->columns([
-                TextColumn::make('code')
-                    ->label('Code')
-                    ->searchable()
-                    ->sortable()
-                    ->copyable(),
-
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
                     ->sortable(),
-
-                TextColumn::make('peak_value')
-                    ->label('Peak Value')
-                    ->sortable()
-                    ->numeric(decimalPlaces: 4),
 
                 TextColumn::make('rise_percentage')
                     ->label('Rise %')
@@ -52,8 +41,29 @@ class StocksTable
                     ->badge()
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
                     ->formatStateUsing(fn ($state) => number_format($state, 2).'%'),
+
+                TextColumn::make('last_trade_at')
+                    ->label('Last Trade')
+                    ->getStateUsing(fn (Stock $record) => $record->trades->max('executed_at'))
+                    ->dateTime()
+                    ->formatStateUsing(fn ($state) => $state?->diffForHumans() ?? '-'),
+
+                TextColumn::make('code')
+                    ->label('Code')
+                    ->searchable()
+                    ->sortable()
+                    ->copyable(),
+
+                TextColumn::make('peak_value')
+                    ->label('Peak Value')
+                    ->sortable()
+                    ->numeric(decimalPlaces: 4)
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->modifyQueryUsing(fn ($query) => $query->with(['dayPrices' => fn ($q) => $q->latest('date')->limit(2)]))
+            ->modifyQueryUsing(fn ($query) => $query->with([
+                'dayPrices' => fn ($q) => $q->latest('date')->limit(2),
+                'trades' => fn ($q) => $q->select('id', 'stock_id', 'executed_at'),
+            ]))
             ->filters([
                 //
             ])
