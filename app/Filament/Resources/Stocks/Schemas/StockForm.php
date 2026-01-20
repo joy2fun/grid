@@ -20,6 +20,11 @@ class StockForm
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
+
+                TextInput::make('peak_value')
+                    ->label('Peak Value')
+                    ->numeric()
+                    ->step(0.0001),
             ]);
     }
 }

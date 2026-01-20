@@ -12,6 +12,7 @@ class Stock extends Model
     protected $fillable = [
         'code',
         'name',
+        'peak_value',
     ];
 
     public function dayPrices()

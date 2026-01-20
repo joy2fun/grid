@@ -86,6 +86,12 @@ class StockService
                 $processedCount += count($chunk);
             }
 
+            // Update peak value for the stock
+            $newPeak = collect($dayPricesData)->max('high_price');
+            if ($newPeak > $stock->peak_value) {
+                $stock->update(['peak_value' => $newPeak]);
+            }
+
             return ['success' => true, 'processed_count' => $processedCount];
         } catch (\Exception $e) {
             Log::error("Error syncing stock prices for {$stockCode}", [
@@ -120,7 +126,7 @@ class StockService
 
         $sql = '
             INSERT OR REPLACE INTO day_prices (stock_id, date, open_price, close_price, high_price, low_price, volume)
-            VALUES ' . implode(',', $values);
+            VALUES '.implode(',', $values);
 
         DB::statement($sql, $bindings);
     }
@@ -160,6 +166,18 @@ class StockService
 
         if (! empty($dayPricesData)) {
             $this->bulkUpsertDayPrices($dayPricesData);
+
+            // Update peak values for stocks
+            foreach ($realtimeData as $code => $data) {
+                if (! $data || $data['timestamp'] !== $today) {
+                    continue;
+                }
+
+                $stock = Stock::where('code', $code)->first();
+                if ($stock && ($data['high_price'] > $stock->peak_value)) {
+                    $stock->update(['peak_value' => $data['high_price']]);
+                }
+            }
         }
     }
 
