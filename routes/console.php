@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('app:sync-realtime-prices')
     ->everyMinute()
     ->weekdays()
-    ->between('9:30', '11:30');
+    ->between('9:30', '11:31');
 
 Schedule::command('app:sync-realtime-prices')
     ->everyMinute()
     ->weekdays()
-    ->between('13:00', '15:00');
+    ->between('13:00', '15:01');

@@ -28,15 +28,26 @@ class HoldingResource extends Resource
                 Select::make('stock_id')
                     ->relationship('stock', 'name')
                     ->required(),
+                TextInput::make('initial_quantity')
+                    ->label('Initial Quantity')
+                    ->numeric()
+                    ->required(),
+                TextInput::make('initial_cost')
+                    ->label('Initial Cost')
+                    ->numeric()
+                    ->required(),
                 TextInput::make('quantity')
+                    ->label('Current Quantity')
                     ->numeric()
-                    ->required(),
+                    ->disabled(),
                 TextInput::make('average_cost')
+                    ->label('Average Cost')
                     ->numeric()
-                    ->required(),
+                    ->disabled(),
                 TextInput::make('total_cost')
+                    ->label('Total Cost')
                     ->numeric()
-                    ->required(),
+                    ->disabled(),
             ]);
     }
 
@@ -50,19 +61,34 @@ class HoldingResource extends Resource
                     ->sortable()
                     ->searchable(['name', 'code']),
                 TextColumn::make('quantity')
+                    ->label('Current Qty')
                     ->numeric(0)
                     ->sortable(),
                 TextColumn::make('average_cost')
+                    ->label('Avg Cost')
                     ->numeric(3)
                     ->sortable(),
                 TextColumn::make('total_cost')
+                    ->label('Total Cost')
                     ->numeric(0)
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('initial_quantity')
+                    ->label('Initial Qty')
+                    ->numeric(0)
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('initial_cost')
+                    ->label('Initial Cost')
+                    ->numeric(3)
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->paginated(false)
             ->filters([
                 //
             ])
