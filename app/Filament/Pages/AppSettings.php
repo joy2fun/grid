@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use App\Models\AppSetting;
+use App\Services\BarkService;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -27,6 +29,7 @@ class AppSettings extends Page implements HasForms
         $this->form->fill([
             'notifications_enabled' => AppSetting::get('notifications_enabled', true),
             'bark_url' => AppSetting::get('bark_url'),
+            'inactive_stocks_threshold' => AppSetting::get('inactive_stocks_threshold', 30),
         ]);
     }
 
@@ -35,7 +38,7 @@ class AppSettings extends Page implements HasForms
         return $schema
             ->schema([
                 Section::make('Application Settings')
-                    ->description('Configure application notification preferences')
+                    ->description('Configure application preferences')
                     ->schema([
                         Toggle::make('notifications_enabled')
                             ->label('Enable Notifications')
@@ -44,11 +47,59 @@ class AppSettings extends Page implements HasForms
                             ->label('Bark Notification URL')
                             ->placeholder('https://api.day.app/your-key/')
                             ->url()
-                            ->helperText('Enter your Bark push notification endpoint URL'),
+                            ->helperText('Enter your Bark push notification endpoint URL')
+                            ->afterContent(
+                                Action::make('test_bark_notification')
+                                    ->label('Test Notification')
+                                    ->action(function () {
+                                        $this->testBarkNotification();
+                                    })
+                            ),
+                        TextInput::make('inactive_stocks_threshold')
+                            ->label('Inactive Stocks Threshold (days)')
+                            ->placeholder('30')
+                            ->numeric()
+                            ->minValue(1)
+                            ->default(30)
+                            ->helperText('Number of days after which a stock is considered inactive if not traded'),
                     ])
                     ->columns(1),
             ])
             ->statePath('data');
+    }
+
+    public function testBarkNotification(): void
+    {
+        $barkUrl = $this->form->getState()['bark_url'];
+
+        if (empty($barkUrl)) {
+            Notification::make()
+                ->title('Error')
+                ->body('Please enter a Bark URL first')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        $success = BarkService::send(
+            'Test Notification',
+            'This is a test notification from Grid application',
+            $barkUrl
+        );
+
+        if ($success) {
+            Notification::make()
+                ->title('Success')
+                ->body('Test notification sent successfully!')
+                ->success()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Error')
+                ->body('Failed to send test notification. Please check your Bark URL.')
+                ->danger()
+                ->send();
+        }
     }
 
     public function save(): void
@@ -58,6 +109,7 @@ class AppSettings extends Page implements HasForms
         // Save app settings
         AppSetting::set('notifications_enabled', $data['notifications_enabled'] ?? false);
         AppSetting::set('bark_url', $data['bark_url'] ?? null);
+        AppSetting::set('inactive_stocks_threshold', (int)($data['inactive_stocks_threshold'] ?? 30));
 
         Notification::make()
             ->title('Settings saved')
