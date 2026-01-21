@@ -30,6 +30,7 @@ class AppSettings extends Page implements HasForms
             'notifications_enabled' => AppSetting::get('notifications_enabled', true),
             'bark_url' => AppSetting::get('bark_url'),
             'inactive_stocks_threshold' => AppSetting::get('inactive_stocks_threshold', 30),
+            'price_change_threshold' => AppSetting::get('price_change_threshold', 5),
         ]);
     }
 
@@ -62,6 +63,15 @@ class AppSettings extends Page implements HasForms
                             ->minValue(1)
                             ->default(30)
                             ->helperText('Number of days after which a stock is considered inactive if not traded'),
+                        TextInput::make('price_change_threshold')
+                            ->label('Price Change Threshold (%)')
+                            ->placeholder('5')
+                            ->numeric()
+                            ->minValue(0.1)
+                            ->maxValue(100)
+                            ->step(0.1)
+                            ->default(5)
+                            ->helperText('Percentage price change (rise or drop) compared to last traded price to trigger notifications'),
                     ])
                     ->columns(1),
             ])
@@ -78,6 +88,7 @@ class AppSettings extends Page implements HasForms
                 ->body('Please enter a Bark URL first')
                 ->danger()
                 ->send();
+
             return;
         }
 
@@ -109,7 +120,8 @@ class AppSettings extends Page implements HasForms
         // Save app settings
         AppSetting::set('notifications_enabled', $data['notifications_enabled'] ?? false);
         AppSetting::set('bark_url', $data['bark_url'] ?? null);
-        AppSetting::set('inactive_stocks_threshold', (int)($data['inactive_stocks_threshold'] ?? 30));
+        AppSetting::set('inactive_stocks_threshold', (int) ($data['inactive_stocks_threshold'] ?? 30));
+        AppSetting::set('price_change_threshold', (float) ($data['price_change_threshold'] ?? 5));
 
         Notification::make()
             ->title('Settings saved')
