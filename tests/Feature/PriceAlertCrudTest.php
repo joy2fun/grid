@@ -7,6 +7,8 @@ use App\Filament\Resources\PriceAlerts\PriceAlertResource;
 use App\Models\PriceAlert;
 use App\Models\Stock;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -24,6 +26,8 @@ class PriceAlertCrudTest extends TestCase
         parent::setUp();
         $this->user = User::factory()->create();
         $this->stock = Stock::factory()->create();
+
+        Filament::setCurrentPanel('admin');
     }
 
     public function test_can_render_price_alert_resource_index_page(): void
@@ -33,21 +37,24 @@ class PriceAlertCrudTest extends TestCase
             ->assertSuccessful();
     }
 
-    public function test_can_load_price_alerts_table(): void
+    public function test_price_alerts_page_displays_livewire_component(): void
+    {
+        $this->actingAs($this->user)
+            ->get(PriceAlertResource::getUrl('index'))
+            ->assertSeeLivewire(ManagePriceAlerts::class);
+    }
+
+    public function test_can_view_price_alerts_in_table(): void
     {
         $alert = PriceAlert::factory()->create(['stock_id' => $this->stock->id]);
 
-        $this->actingAs($this->user);
-
-        Livewire::test(ManagePriceAlerts::class)
+        Livewire::actingAs($this->user)
+            ->test(ManagePriceAlerts::class)
             ->assertCanSeeTableRecords([$alert]);
     }
 
-    public function test_creating_an_alert_via_filament(): void
+    public function test_can_create_price_alert_via_filament(): void
     {
-        $this->actingAs($this->user);
-
-        // Create an alert to verify form validation works correctly
         $data = [
             'stock_id' => $this->stock->id,
             'threshold_type' => 'rise',
@@ -55,15 +62,16 @@ class PriceAlertCrudTest extends TestCase
             'is_active' => true,
         ];
 
-        PriceAlert::create($data);
+        Livewire::actingAs($this->user)
+            ->test(ManagePriceAlerts::class)
+            ->callAction('create', data: $data)
+            ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas(PriceAlert::class, $data);
     }
 
-    public function test_updating_an_alert_via_filament(): void
+    public function test_can_edit_price_alert_via_filament(): void
     {
-        $this->actingAs($this->user);
-
         $alert = PriceAlert::factory()->create([
             'stock_id' => $this->stock->id,
             'threshold_type' => 'rise',
@@ -71,14 +79,15 @@ class PriceAlertCrudTest extends TestCase
             'is_active' => true,
         ]);
 
-        Livewire::test(ManagePriceAlerts::class)
-            ->callTableAction('edit', $alert, data: [
+        Livewire::actingAs($this->user)
+            ->test(ManagePriceAlerts::class)
+            ->callAction(TestAction::make('edit')->table($alert), data: [
                 'stock_id' => $this->stock->id,
                 'threshold_type' => 'drop',
                 'threshold_value' => 95.00,
                 'is_active' => false,
             ])
-            ->assertHasNoTableActionErrors();
+            ->assertHasNoFormErrors();
 
         $alert->refresh();
 
@@ -87,25 +96,22 @@ class PriceAlertCrudTest extends TestCase
         $this->assertFalse($alert->is_active);
     }
 
-    public function test_deleting_an_alert_via_filament(): void
+    public function test_can_delete_price_alert_via_filament(): void
     {
-        $this->actingAs($this->user);
-
         $alert = PriceAlert::factory()->create(['stock_id' => $this->stock->id]);
         $alertId = $alert->id;
 
-        Livewire::test(ManagePriceAlerts::class)
-            ->callTableAction('delete', $alert);
+        Livewire::actingAs($this->user)
+            ->test(ManagePriceAlerts::class)
+            ->callAction(TestAction::make('delete')->table($alert));
 
         $this->assertDatabaseMissing(PriceAlert::class, [
             'id' => $alertId,
         ]);
     }
 
-    public function test_toggling_alert_activation(): void
+    public function test_can_toggle_alert_activation_via_edit(): void
     {
-        $this->actingAs($this->user);
-
         $alert = PriceAlert::factory()->create([
             'stock_id' => $this->stock->id,
             'threshold_type' => 'rise',
@@ -116,39 +122,40 @@ class PriceAlertCrudTest extends TestCase
         $this->assertTrue($alert->is_active);
 
         // Toggle to inactive
-        Livewire::test(ManagePriceAlerts::class)
-            ->callTableAction('edit', $alert, data: [
+        Livewire::actingAs($this->user)
+            ->test(ManagePriceAlerts::class)
+            ->callAction(TestAction::make('edit')->table($alert), data: [
                 'stock_id' => $this->stock->id,
                 'threshold_type' => 'rise',
                 'threshold_value' => 100.00,
                 'is_active' => false,
             ])
-            ->assertHasNoTableActionErrors();
+            ->assertHasNoFormErrors();
 
         $alert->refresh();
         $this->assertFalse($alert->is_active);
 
         // Toggle back to active
-        Livewire::test(ManagePriceAlerts::class)
-            ->callTableAction('edit', $alert, data: [
+        Livewire::actingAs($this->user)
+            ->test(ManagePriceAlerts::class)
+            ->callAction(TestAction::make('edit')->table($alert), data: [
                 'stock_id' => $this->stock->id,
                 'threshold_type' => 'rise',
                 'threshold_value' => 100.00,
                 'is_active' => true,
             ])
-            ->assertHasNoTableActionErrors();
+            ->assertHasNoFormErrors();
 
         $alert->refresh();
         $this->assertTrue($alert->is_active);
     }
 
-    public function test_alert_belongs_to_stock(): void
+    public function test_price_alert_displays_stock_relationship(): void
     {
         $alert = PriceAlert::factory()->create(['stock_id' => $this->stock->id]);
 
-        $this->actingAs($this->user);
-
-        Livewire::test(ManagePriceAlerts::class)
+        Livewire::actingAs($this->user)
+            ->test(ManagePriceAlerts::class)
             ->assertCanSeeTableRecords([$alert]);
 
         $this->assertInstanceOf(Stock::class, $alert->stock);

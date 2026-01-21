@@ -71,7 +71,7 @@ class PriceAlertsTable
                         '0' => 'Inactive',
                     ]),
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
             ]);
