@@ -7,6 +7,7 @@ use App\Models\Stock;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class StocksTable
@@ -59,13 +60,23 @@ class StocksTable
                     ->sortable()
                     ->numeric(decimalPlaces: 4)
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('type')
+                    ->label('Type')
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => ucfirst($state)),
             ])
             ->modifyQueryUsing(fn ($query) => $query->with([
                 'dayPrices' => fn ($q) => $q->latest('date')->limit(2),
                 'trades' => fn ($q) => $q->select('id', 'stock_id', 'executed_at'),
             ]))
             ->filters([
-                //
+                SelectFilter::make('type')
+                    ->label('Type')
+                    ->options([
+                        'etf' => 'ETF',
+                        'index' => 'Index',
+                    ]),
             ])
             ->actions([
                 EditAction::make(),

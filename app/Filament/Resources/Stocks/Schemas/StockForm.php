@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Stocks\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -25,6 +26,14 @@ class StockForm
                     ->label('Peak Value')
                     ->numeric()
                     ->step(0.0001),
+
+                Select::make('type')
+                    ->label('Type')
+                    ->required()
+                    ->options([
+                        'etf' => 'ETF',
+                        'index' => 'Index',
+                    ]),
             ]);
     }
 }

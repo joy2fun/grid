@@ -19,6 +19,7 @@ class StockFactory extends Factory
         return [
             'code' => fake()->lexify('???'),
             'name' => fake()->company(),
+            'type' => fake()->randomElement(['etf', 'index']),
         ];
     }
 }

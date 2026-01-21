@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use App\Models\AppSetting;
 
 class Stock extends Model
 {
@@ -14,6 +13,7 @@ class Stock extends Model
     protected $fillable = [
         'code',
         'name',
+        'type',
         'peak_value',
     ];
 
@@ -37,7 +37,7 @@ class Stock extends Model
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);
         $lastTrade = $this->trades()->latest()->first();
 
-        if (!$lastTrade) {
+        if (! $lastTrade) {
             return true; // No trades ever, considered inactive
         }
 
@@ -52,9 +52,9 @@ class Stock extends Model
         // Stocks with no trades at all OR stocks with last trade before cutoff date
         return static::where(function ($query) use ($cutoffDate) {
             $query->whereDoesntHave('trades')
-                  ->orWhereHas('trades', function ($subquery) use ($cutoffDate) {
-                      $subquery->where('created_at', '<', $cutoffDate);
-                  });
+                ->orWhereHas('trades', function ($subquery) use ($cutoffDate) {
+                    $subquery->where('created_at', '<', $cutoffDate);
+                });
         });
     }
 }
