@@ -24,6 +24,17 @@ class AppSettings extends Page implements HasForms
 
     public ?array $data = [];
 
+    private ?BarkService $barkService = null;
+
+    private function barkService(): BarkService
+    {
+        if ($this->barkService === null) {
+            $this->barkService = app(BarkService::class);
+        }
+
+        return $this->barkService;
+    }
+
     public function mount(): void
     {
         $this->form->fill([
@@ -92,7 +103,7 @@ class AppSettings extends Page implements HasForms
             return;
         }
 
-        $success = BarkService::send(
+        $success = $this->barkService()->send(
             'Test Notification',
             'This is a test notification from Grid application',
             $barkUrl

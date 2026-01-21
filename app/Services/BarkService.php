@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 
 class BarkService
 {
-    public static function send(string $title, string $body, ?string $url = null): bool
+    public function send(string $title, string $body, ?string $url = null): bool
     {
         $barkUrl = $url ?? config('services.bark.url') ?? AppSetting::get('bark_url');
 
