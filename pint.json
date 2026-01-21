@@ -1,0 +1,8 @@
+{
+    "exclude": [
+        "adminneo-plugins"
+    ],
+    "notName": [
+        "adminneo.php"
+    ]
+}
