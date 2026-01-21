@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Grids\Widgets;
 
 use App\Models\Grid;
-use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 use Illuminate\Database\Eloquent\Model;
+use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
 class GridTradesChart extends ApexChartWidget
 {
@@ -53,31 +53,32 @@ class GridTradesChart extends ApexChartWidget
             ];
         })->toArray();
 
-        $categories = $data->map(fn($dayPrice) => $dayPrice->date->toDateString())->values()->toArray();
-        
+        $categories = $data->map(fn ($dayPrice) => $dayPrice->date->toDateString())->values()->toArray();
+
         // Key data by date for easy lookup of close price
-        $datesMap = $data->keyBy(fn($item) => $item->date->toDateString());
+        $datesMap = $data->keyBy(fn ($item) => $item->date->toDateString());
 
         $pointAnnotations = $grid->trades()
             ->orderBy('executed_at')
             ->get()
             ->filter(function ($trade) use ($datesMap) {
-                 // Only show trades that are within the chart's date range
-                 $dateStr = $trade->executed_at instanceof \Carbon\Carbon 
-                    ? $trade->executed_at->toDateString() 
-                    : \Illuminate\Support\Carbon::parse($trade->executed_at)->toDateString();
-                 return $datesMap->has($dateStr);
+                // Only show trades that are within the chart's date range
+                $dateStr = $trade->executed_at instanceof \Carbon\Carbon
+                   ? $trade->executed_at->toDateString()
+                   : \Illuminate\Support\Carbon::parse($trade->executed_at)->toDateString();
+
+                return $datesMap->has($dateStr);
             })
-            ->map(function ($trade) use ($datesMap) {
+            ->map(function ($trade) {
                 $color = $trade->side === 'buy' ? '#00E396' : '#FF4560';
                 $sideChar = str($trade->side)->substr(0, 1)->upper();
-                
-                $dateStr = $trade->executed_at instanceof \Carbon\Carbon 
-                    ? $trade->executed_at->toDateString() 
+
+                $dateStr = $trade->executed_at instanceof \Carbon\Carbon
+                    ? $trade->executed_at->toDateString()
                     : \Illuminate\Support\Carbon::parse($trade->executed_at)->toDateString();
-                
+
                 // Use the ACTUAL TRADING PRICE for the marker position y-value
-                $yPosition = (float)$trade->price;
+                $yPosition = (float) $trade->price;
 
                 return [
                     'x' => $dateStr,
@@ -98,7 +99,7 @@ class GridTradesChart extends ApexChartWidget
                             'fontSize' => '10px',
                             'fontWeight' => 'bold',
                         ],
-                        'text' => "{$sideChar} " . number_format($trade->price, 3),
+                        'text' => "{$sideChar} ".number_format($trade->price, 3),
                     ],
                 ];
             })->values()->toArray();

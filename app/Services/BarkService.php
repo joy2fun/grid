@@ -17,13 +17,15 @@ class BarkService
         }
 
         // Ensure URL ends with slash
-        $barkUrl = rtrim($barkUrl, '/') . '/';
+        $barkUrl = rtrim($barkUrl, '/').'/';
 
         try {
-            $response = Http::get($barkUrl . urlencode($title) . '/' . urlencode($body));
+            $response = Http::get($barkUrl.urlencode($title).'/'.urlencode($body));
+
             return $response->successful();
         } catch (Exception $e) {
-            logger()->error('Failed to send Bark notification: ' . $e->getMessage());
+            logger()->error('Failed to send Bark notification: '.$e->getMessage());
+
             return false;
         }
     }

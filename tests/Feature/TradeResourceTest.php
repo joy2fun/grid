@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Filament\Resources\Trades\TradeResource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class TradeResourceTest extends TestCase

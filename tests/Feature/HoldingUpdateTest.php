@@ -15,7 +15,7 @@ class HoldingUpdateTest extends TestCase
     public function test_holding_is_created_when_trade_is_created(): void
     {
         $stock = Stock::factory()->create();
-        
+
         Trade::factory()->create([
             'stock_id' => $stock->id,
             'side' => 'buy',
@@ -34,7 +34,7 @@ class HoldingUpdateTest extends TestCase
     public function test_holding_is_updated_when_multiple_trades_are_created(): void
     {
         $stock = Stock::factory()->create();
-        
+
         Trade::factory()->create([
             'stock_id' => $stock->id,
             'side' => 'buy',
@@ -60,7 +60,7 @@ class HoldingUpdateTest extends TestCase
     public function test_holding_is_updated_when_sell_trade_is_created(): void
     {
         $stock = Stock::factory()->create();
-        
+
         Trade::factory()->create([
             'stock_id' => $stock->id,
             'side' => 'buy',
@@ -87,7 +87,7 @@ class HoldingUpdateTest extends TestCase
     public function test_holding_is_recalculated_when_trade_is_deleted(): void
     {
         $stock = Stock::factory()->create();
-        
+
         $trade1 = Trade::factory()->create([
             'stock_id' => $stock->id,
             'side' => 'buy',

@@ -50,7 +50,7 @@ class StockPriceChart extends ApexChartWidget
             ->orderBy('executed_at')
             ->get();
 
-        $pointAnnotations = $trades->map(function ($trade) use ($chartData, $categories) {
+        $pointAnnotations = $trades->map(function ($trade) {
             $dateStr = $trade->executed_at->toDateString();
             $color = $trade->side === 'buy' ? '#00E396' : '#FF4560';
 
@@ -62,7 +62,7 @@ class StockPriceChart extends ApexChartWidget
                     'fillColor' => $color,
                     'strokeColor' => '#fff',
                     'strokeWidth' => 1,
-                    'shape' => 'circle'
+                    'shape' => 'circle',
                 ],
                 'label' => [
                     'borderColor' => $color,
@@ -72,9 +72,9 @@ class StockPriceChart extends ApexChartWidget
                         'fontSize' => '10px',
                         'fontWeight' => 'bold',
                     ],
-                    'text' => ($trade->side === 'buy' ? 'B ' : 'S ') . number_format($trade->price, 3),
-                    'offsetY' => -10
-                ]
+                    'text' => ($trade->side === 'buy' ? 'B ' : 'S ').number_format($trade->price, 3),
+                    'offsetY' => -10,
+                ],
             ];
         })->values()->toArray();
 
@@ -84,7 +84,7 @@ class StockPriceChart extends ApexChartWidget
                 'height' => 350,
                 'toolbar' => [
                     'show' => true,
-                ]
+                ],
             ],
             'series' => [
                 [
@@ -99,9 +99,9 @@ class StockPriceChart extends ApexChartWidget
                 'labels' => [
                     'rotate' => -45,
                     'style' => [
-                        'fontSize' => '11px'
-                    ]
-                ]
+                        'fontSize' => '11px',
+                    ],
+                ],
             ],
             'yaxis' => [
                 'tooltip' => [

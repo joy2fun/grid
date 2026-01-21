@@ -4,13 +4,12 @@ namespace App\Utilities;
 
 class Helper
 {
-
     /**
      * Calculate the Extended Internal Rate of Return (XIRR)
      *
-     * @param array $cashFlows Array of cash flows (positive for inflows, negative for outflows)
-     * @param array $dates Array of dates corresponding to each cash flow
-     * @param float $guess Optional initial guess for the rate (default 0.1 = 10%)
+     * @param  array  $cashFlows  Array of cash flows (positive for inflows, negative for outflows)
+     * @param  array  $dates  Array of dates corresponding to each cash flow
+     * @param  float  $guess  Optional initial guess for the rate (default 0.1 = 10%)
      * @return float|null The calculated XIRR or null if calculation fails
      */
     public static function calculateXIRR($cashFlows, $dates, $guess = 0.1)
@@ -25,11 +24,15 @@ class Helper
         $hasNegative = false;
 
         foreach ($cashFlows as $cf) {
-            if ($cf > 0) $hasPositive = true;
-            if ($cf < 0) $hasNegative = true;
+            if ($cf > 0) {
+                $hasPositive = true;
+            }
+            if ($cf < 0) {
+                $hasNegative = true;
+            }
         }
 
-        if (!$hasPositive || !$hasNegative) {
+        if (! $hasPositive || ! $hasNegative) {
             return null; // Cannot calculate XIRR without both inflows and outflows
         }
 
@@ -60,6 +63,7 @@ class Helper
             if (abs($sumCashFlows) > $precision) {
                 return null; // No solution exists
             }
+
             // If sum is zero, any rate satisfies the equation, so return 0
             return 0.0;
         }
@@ -67,7 +71,7 @@ class Helper
         // Additional validation: check for extremely close dates that might cause numerical issues
         $minTimeDiff = PHP_INT_MAX;
         for ($i = 1; $i < count($timestamps); $i++) {
-            $timeDiff = abs($timestamps[$i] - $timestamps[$i-1]);
+            $timeDiff = abs($timestamps[$i] - $timestamps[$i - 1]);
             if ($timeDiff > 0 && $timeDiff < $minTimeDiff) {
                 $minTimeDiff = $timeDiff;
             }

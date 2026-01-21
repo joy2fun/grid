@@ -12,7 +12,7 @@ class GridStatsWidget extends Widget
 
     public ?Model $record = null;
 
-    public int | string | array $columnSpan = 'full';
+    public int|string|array $columnSpan = 'full';
 
     protected function getViewData(): array
     {

@@ -10,7 +10,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test basic XIRR calculation with a simple investment scenario
      */
-    public function testBasicXirrCalculation(): void
+    public function test_basic_xirr_calculation(): void
     {
         // Investment of $10,000 on Jan 1, 2020
         // Return of $11,000 on Jan 1, 2021 (one year later)
@@ -27,7 +27,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with multiple cash flows
      */
-    public function testXirrMultipleCashFlows(): void
+    public function test_xirr_multiple_cash_flows(): void
     {
         // Investment of $10,000 on Jan 1, 2020
         // Additional investment of $5,000 on Jul 1, 2020
@@ -45,12 +45,12 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with DateTime objects
      */
-    public function testXirrWithDateTimeObjects(): void
+    public function test_xirr_with_date_time_objects(): void
     {
         $cashFlows = [-10000, 11000];
         $dates = [
             new \DateTime('2020-01-01'),
-            new \DateTime('2021-01-01')
+            new \DateTime('2021-01-01'),
         ];
 
         $xirr = Helper::calculateXIRR($cashFlows, $dates);
@@ -62,12 +62,12 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with mixed date formats
      */
-    public function testXirrWithMixedDateFormats(): void
+    public function test_xirr_with_mixed_date_formats(): void
     {
         $cashFlows = [-5000, 6000];
         $dates = [
             '2020-06-15',
-            new \DateTime('2021-06-15')
+            new \DateTime('2021-06-15'),
         ];
 
         $xirr = Helper::calculateXIRR($cashFlows, $dates);
@@ -79,7 +79,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with negative return
      */
-    public function testXirrNegativeReturn(): void
+    public function test_xirr_negative_return(): void
     {
         // Investment of $10,000 on Jan 1, 2020
         // Return of $9,000 on Jan 1, 2021 (loss of 10%)
@@ -96,7 +96,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with same dates that sum to zero (should return 0)
      */
-    public function testXirrSameDatesSumZero(): void
+    public function test_xirr_same_dates_sum_zero(): void
     {
         $cashFlows = [-10000, 10000]; // Sum is zero
         $dates = ['2020-01-01', '2020-01-01']; // Same date
@@ -111,7 +111,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with same dates that don't sum to zero (should return null)
      */
-    public function testXirrSameDatesNotSumZero(): void
+    public function test_xirr_same_dates_not_sum_zero(): void
     {
         $cashFlows = [-10000, 11000]; // Sum is not zero
         $dates = ['2020-01-01', '2020-01-01']; // Same date
@@ -125,7 +125,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with insufficient data (should return null)
      */
-    public function testXirrErrorInsufficientData(): void
+    public function test_xirr_error_insufficient_data(): void
     {
         $cashFlows = [-10000]; // Only one cash flow
         $dates = ['2020-01-01'];
@@ -138,7 +138,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with mismatched arrays (should return null)
      */
-    public function testXirrErrorMismatchedArrays(): void
+    public function test_xirr_error_mismatched_arrays(): void
     {
         $cashFlows = [-10000, 11000, 500];
         $dates = ['2020-01-01', '2021-01-01']; // One less date than cash flows
@@ -151,7 +151,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with all positive cash flows (should return null)
      */
-    public function testXirrErrorAllPositive(): void
+    public function test_xirr_error_all_positive(): void
     {
         $cashFlows = [10000, 11000]; // All positive
         $dates = ['2020-01-01', '2021-01-01'];
@@ -164,7 +164,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with all negative cash flows (should return null)
      */
-    public function testXirrErrorAllNegative(): void
+    public function test_xirr_error_all_negative(): void
     {
         $cashFlows = [-10000, -11000]; // All negative
         $dates = ['2020-01-01', '2021-01-01'];
@@ -177,7 +177,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with very close dates (potential precision issues)
      */
-    public function testXirrVeryCloseDates(): void
+    public function test_xirr_very_close_dates(): void
     {
         $cashFlows = [-10000, 10500];
         $dates = ['2020-01-01', '2020-01-02']; // Only one day apart
@@ -191,7 +191,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with extremely high return
      */
-    public function testXirrHighReturn(): void
+    public function test_xirr_high_return(): void
     {
         $cashFlows = [-1000, 5000]; // 400% return
         $dates = ['2020-01-01', '2021-01-01'];
@@ -205,7 +205,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with extremely long period
      */
-    public function testXirrLongPeriod(): void
+    public function test_xirr_long_period(): void
     {
         $cashFlows = [-10000, 10000]; // Break even over 10 years
         $dates = ['2010-01-01', '2020-01-01'];
@@ -219,7 +219,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with leap year dates
      */
-    public function testXirrLeapYear(): void
+    public function test_xirr_leap_year(): void
     {
         $cashFlows = [-10000, 11000];
         $dates = ['2020-02-28', '2021-02-28']; // Across leap year
@@ -233,7 +233,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with different initial guess
      */
-    public function testXirrDifferentGuess(): void
+    public function test_xirr_different_guess(): void
     {
         $cashFlows = [-10000, 12000];
         $dates = ['2020-01-01', '2021-01-01'];
@@ -247,7 +247,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with many cash flows
      */
-    public function testXirrManyCashFlows(): void
+    public function test_xirr_many_cash_flows(): void
     {
         // Simulate monthly investments followed by a lump sum return
         $cashFlows = [];
@@ -256,7 +256,7 @@ class XirrCalculationTest extends TestCase
         // Monthly investments of $1000 for a year
         for ($i = 0; $i < 12; $i++) {
             $cashFlows[] = -1000;
-            $dates[] = '2020-' . sprintf('%02d', $i + 1) . '-01';
+            $dates[] = '2020-'.sprintf('%02d', $i + 1).'-01';
         }
 
         // Lump sum return at end of year
@@ -272,7 +272,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with cash flows that sum to zero but have different dates
      */
-    public function testXirrSumZeroDifferentDates(): void
+    public function test_xirr_sum_zero_different_dates(): void
     {
         $cashFlows = [-10000, 10000]; // Sum is zero
         $dates = ['2020-01-01', '2021-01-01']; // Different dates
@@ -286,7 +286,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with cash flows that have very small amounts
      */
-    public function testXirrSmallAmounts(): void
+    public function test_xirr_small_amounts(): void
     {
         $cashFlows = [-0.01, 0.02]; // Very small amounts
         $dates = ['2020-01-01', '2021-01-01'];
@@ -300,7 +300,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with cash flows that have very large amounts
      */
-    public function testXirrLargeAmounts(): void
+    public function test_xirr_large_amounts(): void
     {
         $cashFlows = [-1000000000, 1200000000]; // Very large amounts (billions)
         $dates = ['2020-01-01', '2021-01-01'];
@@ -314,7 +314,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with cash flows that result in a rate near -100%
      */
-    public function testXirrNearMinus100Percent(): void
+    public function test_xirr_near_minus100_percent(): void
     {
         $cashFlows = [-10000, 10]; // Massive loss
         $dates = ['2020-01-01', '2021-01-01'];
@@ -328,7 +328,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with cash flows that result in a very high positive rate
      */
-    public function testXirrVeryHighPositiveRate(): void
+    public function test_xirr_very_high_positive_rate(): void
     {
         $cashFlows = [-100, 100000]; // Very high return
         $dates = ['2020-01-01', '2021-01-01'];
@@ -342,7 +342,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with cash flows that have alternating signs
      */
-    public function testXirrAlternatingSigns(): void
+    public function test_xirr_alternating_signs(): void
     {
         $cashFlows = [-1000, 500, -300, 1200]; // Alternating signs
         $dates = ['2020-01-01', '2020-06-01', '2020-12-01', '2021-06-01'];
@@ -355,7 +355,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with cash flows that are all zeros except one
      */
-    public function testXirrMostlyZeros(): void
+    public function test_xirr_mostly_zeros(): void
     {
         $cashFlows = [0, 0, -1000, 0, 1100]; // Mostly zeros
         $dates = ['2020-01-01', '2020-02-01', '2020-03-01', '2020-04-01', '2021-03-01'];
@@ -369,7 +369,7 @@ class XirrCalculationTest extends TestCase
     /**
      * Test XIRR with cash flows that are all zeros
      */
-    public function testXirrAllZeros(): void
+    public function test_xirr_all_zeros(): void
     {
         $cashFlows = [0, 0, 0]; // All zeros
         $dates = ['2020-01-01', '2020-06-01', '2021-01-01'];
@@ -393,7 +393,7 @@ class XirrCalculationTest extends TestCase
                 'cashFlows' => [-1000, 1100],
                 'dates' => ['2020-01-01', '2021-01-01'],
                 'expected' => 0.1,
-                'tolerance' => 0.001
+                'tolerance' => 0.001,
             ],
 
             // Simple 1-year investment: -1000 investment, +1200 return after 1 year = 20% XIRR
@@ -401,7 +401,7 @@ class XirrCalculationTest extends TestCase
                 'cashFlows' => [-1000, 1200],
                 'dates' => ['2020-01-01', '2021-01-01'],
                 'expected' => 0.2,
-                'tolerance' => 0.001
+                'tolerance' => 0.001,
             ],
 
             // Simple 1-year loss: -1000 investment, +900 return after 1 year = -10% XIRR
@@ -409,7 +409,7 @@ class XirrCalculationTest extends TestCase
                 'cashFlows' => [-1000, 900],
                 'dates' => ['2020-01-01', '2021-01-01'],
                 'expected' => -0.1,
-                'tolerance' => 0.001
+                'tolerance' => 0.001,
             ],
 
             // Two-year investment: -1000 investment, +1210 return after 2 years = 10% XIRR
@@ -417,7 +417,7 @@ class XirrCalculationTest extends TestCase
                 'cashFlows' => [-1000, 1210],
                 'dates' => ['2020-01-01', '2022-01-01'],
                 'expected' => 0.1,
-                'tolerance' => 0.001
+                'tolerance' => 0.001,
             ],
 
             // Multiple cash flows: -1000 initial, -500 after 6 months, +1800 after 1 year
@@ -425,7 +425,7 @@ class XirrCalculationTest extends TestCase
                 'cashFlows' => [-1000, -500, 1800],
                 'dates' => ['2020-01-01', '2020-07-01', '2021-01-01'],
                 'expected' => 0.2416, // Actual XIRR value calculated by the function
-                'tolerance' => 0.001 // Tight tolerance for verified value
+                'tolerance' => 0.001, // Tight tolerance for verified value
             ],
 
             // Investment with intermediate cash flow: -1000, +200 after 6 months, +900 after 1 year
@@ -433,19 +433,19 @@ class XirrCalculationTest extends TestCase
                 'cashFlows' => [-1000, 200, 900],
                 'dates' => ['2020-01-01', '2020-07-01', '2021-01-01'],
                 'expected' => 0.1105, // Actual XIRR value calculated by the function
-                'tolerance' => 0.001 // Tight tolerance for verified value
+                'tolerance' => 0.001, // Tight tolerance for verified value
             ],
         ];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('xirrDataProvider')]
-    public function testXirrWithKnownScenarios(array $cashFlows, array $dates, float $expected, float $tolerance): void
+    public function test_xirr_with_known_scenarios(array $cashFlows, array $dates, float $expected, float $tolerance): void
     {
         $xirr = Helper::calculateXIRR($cashFlows, $dates);
 
         // If we expect a specific value, the function should return a result
         if ($expected !== null) {
-            $this->assertNotNull($xirr, "XIRR should not be null for scenario with cash flows: " . json_encode($cashFlows));
+            $this->assertNotNull($xirr, 'XIRR should not be null for scenario with cash flows: '.json_encode($cashFlows));
             $this->assertEqualsWithDelta($expected, $xirr, $tolerance,
                 "XIRR calculation did not match expected value. Expected: {$expected}, Got: {$xirr}");
         }

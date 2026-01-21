@@ -2,21 +2,21 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
 use App\Utilities\StockPriceService;
+use PHPUnit\Framework\TestCase;
 
 class StockPriceServiceTest extends TestCase
 {
-    public function testGetRealtimePricesReturnsCorrectStructure()
+    public function test_get_realtime_prices_returns_correct_structure()
     {
         // Test with sample stock codes
         $result = StockPriceService::getRealtimePrices('sh601166', 'sz000001');
-        
+
         // Basic structure check
         $this->assertIsArray($result);
         $this->assertArrayHasKey('sh601166', $result);
         $this->assertArrayHasKey('sz000001', $result);
-        
+
         // Check structure for individual stock
         if ($result['sh601166'] !== null) {
             $this->assertIsArray($result['sh601166']);
@@ -29,20 +29,20 @@ class StockPriceServiceTest extends TestCase
             $this->assertArrayHasKey('timestamp', $result['sh601166']);
         }
     }
-    
-    public function testGetRealtimePricesWithEmptyInput()
+
+    public function test_get_realtime_prices_with_empty_input()
     {
         $result = StockPriceService::getRealtimePrices();
         $this->assertEquals([], $result);
     }
-    
-    public function testGetRealtimePricesWithInvalidCode()
+
+    public function test_get_realtime_prices_with_invalid_code()
     {
         $this->expectException(\InvalidArgumentException::class);
         StockPriceService::getRealtimePrices('invalid_code');
     }
-    
-    public function testGetRealtimePricesWithValidCodeFormat()
+
+    public function test_get_realtime_prices_with_valid_code_format()
     {
         // This test verifies that valid code format doesn't throw validation errors
         // The API call might still fail due to network or invalid stock code, but shouldn't throw validation errors
