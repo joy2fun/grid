@@ -22,6 +22,11 @@ class Stock extends Model
         return $this->hasMany(DayPrice::class);
     }
 
+    public function getCurrentPriceAttribute(): ?float
+    {
+        return $this->dayPrices()->latest('date')->first()?->close_price;
+    }
+
     public function holding()
     {
         return $this->hasOne(Holding::class);

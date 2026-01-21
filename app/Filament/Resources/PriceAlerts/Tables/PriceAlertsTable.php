@@ -20,12 +20,6 @@ class PriceAlertsTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('stock.code')
-                    ->label('Stock Code')
-                    ->searchable()
-                    ->sortable()
-                    ->copyable(),
-
                 TextColumn::make('threshold_type')
                     ->label('Alert Type')
                     ->formatStateUsing(fn ($state) => $state === 'rise' ? 'Price Rise' : 'Price Drop')
@@ -33,15 +27,14 @@ class PriceAlertsTable
                     ->color(fn ($state) => $state === 'rise' ? 'success' : 'danger'),
 
                 TextColumn::make('threshold_value')
-                    ->label('Threshold Price')
+                    ->label('Threshold')
                     ->sortable()
-                    ->numeric(decimalPlaces: 2)
-                    ->money('CNY'),
+                    ->numeric(decimalPlaces: 2),
 
-                TextColumn::make('stock.dayPrices.0.close_price')
+                TextColumn::make('stock.current_price')
                     ->label('Current Price')
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 2) : '-')
-                    ->money('CNY'),
+                    ->numeric(decimalPlaces: 2)
+                    ->default('-'),
 
                 TextColumn::make('last_notified_at')
                     ->label('Last Notified')
@@ -52,11 +45,7 @@ class PriceAlertsTable
                     ->label('Active')
                     ->boolean(),
             ])
-            ->modifyQueryUsing(fn ($query) => $query->with([
-                'stock' => fn ($q) => $q->with([
-                    'dayPrices' => fn ($q) => $q->latest('date')->limit(1),
-                ]),
-            ]))
+            ->modifyQueryUsing(fn ($query) => $query->with('stock'))
             ->filters([
                 SelectFilter::make('threshold_type')
                     ->label('Alert Type')
