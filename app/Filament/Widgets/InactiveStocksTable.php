@@ -32,14 +32,14 @@ class InactiveStocksTable extends TableWidget
                     ->label('Code')
                     ->sortable(),
                 TextColumn::make('name')
-                    ->label('Stock Name')
+                    ->label('Name')
                     ->sortable(),
                 TextColumn::make('current_price')
-                    ->label('Current Price')
+                    ->label('Current')
                     ->money('CNY')
                     ->sortable(),
                 TextColumn::make('lastTradePrice')
-                    ->label('Last Trade Price')
+                    ->label('Last Trade')
                     ->money('CNY')
                     ->getStateUsing(function (Stock $record): ?float {
                         return $record->trades->first()?->price;
@@ -63,11 +63,11 @@ class InactiveStocksTable extends TableWidget
                     })
                     ->sortable(),
                 TextColumn::make('daysInactive')
-                    ->label('Days Inactive')
+                    ->label('Inactive Days')
                     ->getStateUsing(function (Stock $record): int {
                         $lastTrade = $record->trades->first();
                         if (! $lastTrade) {
-                            return 999; // No trades ever
+                            return 0;
                         }
 
                         return $lastTrade->executed_at->diffInDays();

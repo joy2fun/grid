@@ -20,49 +20,51 @@ class PriceChangeStocksTable extends TableWidget
     {
         $threshold = (float) AppSetting::get('price_change_threshold', 5);
 
+        $stocks = Stock::query()
+            ->where('type', '!=', 'index')
+            ->whereHas('trades')
+            ->with(['trades' => function ($query) {
+                $query->latest('executed_at');
+            }])
+            ->whereNotNull('current_price')
+            ->get()
+            ->filter(function (Stock $stock) use ($threshold) {
+                $lastTrade = $stock->trades->first();
+                if (! $lastTrade || $lastTrade->price === 0) {
+                    return false;
+                }
+
+                $priceChangePercentage = (($stock->current_price - $lastTrade->price) / $lastTrade->price) * 100;
+
+                return abs($priceChangePercentage) >= $threshold;
+            })
+            ->sortByDesc(function (Stock $stock) {
+                $lastTrade = $stock->trades->first();
+                if (! $lastTrade || $lastTrade->price === 0) {
+                    return 0;
+                }
+
+                return abs((($stock->current_price - $lastTrade->price) / $lastTrade->price) * 100);
+            })
+            ->values();
+
+        $query = $stocks->isNotEmpty() ? $stocks->toQuery() : Stock::query()->whereRaw('1 = 0');
+
         return $table
-            ->query(
-                Stock::query()
-                    ->whereHas('trades')
-                    ->with(['trades' => function ($query) {
-                        $query->latest('executed_at');
-                    }])
-                    ->whereNotNull('current_price')
-                    ->get()
-                    ->filter(function (Stock $stock) use ($threshold) {
-                        $lastTrade = $stock->trades->first();
-                        if (! $lastTrade || $lastTrade->price === 0) {
-                            return false;
-                        }
-
-                        $priceChangePercentage = (($stock->current_price - $lastTrade->price) / $lastTrade->price) * 100;
-
-                        return abs($priceChangePercentage) >= $threshold;
-                    })
-                    ->sortByDesc(function (Stock $stock) {
-                        $lastTrade = $stock->trades->first();
-                        if (! $lastTrade || $lastTrade->price === 0) {
-                            return 0;
-                        }
-
-                        return abs((($stock->current_price - $lastTrade->price) / $lastTrade->price) * 100);
-                    })
-                    ->values()
-                    ->toQuery()
-            )
+            ->query($query)
             ->columns([
                 TextColumn::make('code')
                     ->label('Code')
                     ->sortable(),
                 TextColumn::make('name')
-                    ->label('Stock Name')
+                    ->label('Name')
                     ->sortable(),
                 TextColumn::make('current_price')
-                    ->label('Current Price')
+                    ->label('Current')
                     ->money('CNY')
                     ->sortable(),
                 TextColumn::make('lastTradePrice')
-                    ->label('Last Trade Price')
+                    ->label('Last Trade')
                     ->money('CNY')
                     ->getStateUsing(function (Stock $record): ?float {
                         return $record->trades->first()?->price;
@@ -87,7 +89,7 @@ class PriceChangeStocksTable extends TableWidget
                     ->weight('bold')
                     ->sortable(),
                 TextColumn::make('daysSinceTrade')
-                    ->label('Days Since Trade')
+                    ->label('Days Since')
                     ->getStateUsing(function (Stock $record): int {
                         $lastTrade = $record->trades->first();
                         if (! $lastTrade) {
