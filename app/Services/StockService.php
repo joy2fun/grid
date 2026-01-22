@@ -140,6 +140,7 @@ class StockService
     {
         $today = now()->format('Y-m-d');
         $dayPricesData = [];
+        $stockUpdates = [];
 
         foreach ($realtimeData as $code => $data) {
             if (! $data || $data['timestamp'] !== $today) {
@@ -162,22 +163,26 @@ class StockService
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+
+            // Prepare stock updates including current_price
+            $stockUpdates[$stock->id] = [
+                'current_price' => $data['current_price'],
+                'updated_at' => now(),
+            ];
+
+            // Update peak_value if current high is higher
+            if ($data['high_price'] > $stock->peak_value) {
+                $stockUpdates[$stock->id]['peak_value'] = $data['high_price'];
+            }
         }
 
         if (! empty($dayPricesData)) {
             $this->bulkUpsertDayPrices($dayPricesData);
+        }
 
-            // Update peak values for stocks
-            foreach ($realtimeData as $code => $data) {
-                if (! $data || $data['timestamp'] !== $today) {
-                    continue;
-                }
-
-                $stock = Stock::where('code', $code)->first();
-                if ($stock && ($data['high_price'] > $stock->peak_value)) {
-                    $stock->update(['peak_value' => $data['high_price']]);
-                }
-            }
+        // Update stocks with current_price and potentially peak_value
+        foreach ($stockUpdates as $stockId => $updates) {
+            Stock::where('id', $stockId)->update($updates);
         }
     }
 

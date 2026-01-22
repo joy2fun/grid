@@ -15,6 +15,7 @@ class Stock extends Model
         'name',
         'type',
         'peak_value',
+        'current_price',
     ];
 
     public function dayPrices()
@@ -24,6 +25,11 @@ class Stock extends Model
 
     public function getCurrentPriceAttribute(): ?float
     {
+        if ($this->attributes['current_price'] !== null) {
+            return (float) $this->attributes['current_price'];
+        }
+
+        // Fallback to latest day price if current_price is not set
         return $this->dayPrices()->latest('date')->first()?->close_price;
     }
 

@@ -34,4 +34,34 @@ class Trade extends Model
     {
         return $this->belongsTo(Stock::class);
     }
+
+    /**
+     * Calculate the percentage change between this trade's price and the current stock price
+     *
+     * @return float|null The percentage change, or null if current price is not available
+     */
+    public function getPriceChangePercentageAttribute(): ?float
+    {
+        $currentPrice = $this->stock->current_price;
+        if ($currentPrice === null || $this->price === 0) {
+            return null;
+        }
+
+        return (($currentPrice - $this->price) / $this->price) * 100;
+    }
+
+    /**
+     * Calculate the absolute price change between this trade's price and the current stock price
+     *
+     * @return float|null The absolute price change, or null if current price is not available
+     */
+    public function getPriceChangeAttribute(): ?float
+    {
+        $currentPrice = $this->stock->current_price;
+        if ($currentPrice === null) {
+            return null;
+        }
+
+        return $currentPrice - $this->price;
+    }
 }
