@@ -15,10 +15,11 @@ class PriceAlertForm
             ->components([
                 Select::make('stock_id')
                     ->label('Stock')
-                    ->relationship('stock', 'name', modifyQueryUsing: fn ($query) => $query->where('type', '!=', 'index'))
+                    ->relationship('stock', 'name')
                     ->searchable()
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} ({$record->code})")
-                    ->required(),
+                    ->required()
+                    ->preload(),
 
                 Select::make('threshold_type')
                     ->label('Alert Type')
