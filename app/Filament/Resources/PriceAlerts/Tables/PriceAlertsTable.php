@@ -14,6 +14,7 @@ class PriceAlertsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->paginated(false)
             ->columns([
                 TextColumn::make('stock.name')
                     ->label('Stock Name')

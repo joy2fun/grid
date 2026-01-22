@@ -43,6 +43,12 @@ class StocksTable
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
                     ->formatStateUsing(fn ($state) => number_format($state, 2).'%'),
 
+                TextColumn::make('current_price')
+                    ->label('Current Price')
+                    ->numeric(decimalPlaces: 2)
+                    ->sortable()
+                    ->default('-'),
+
                 TextColumn::make('last_trade_at')
                     ->label('Last Trade')
                     ->getStateUsing(fn (Stock $record) => $record->trades->max('executed_at'))

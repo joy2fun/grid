@@ -16,7 +16,7 @@ class TradeForm
                 Select::make('grid_id')
                     ->relationship('grid', 'name'),
                 Select::make('stock_id')
-                    ->relationship('stock', 'name')
+                    ->relationship('stock', 'name', modifyQueryUsing: fn ($query) => $query->where('type', '!=', 'index'))
                     ->required(),
                 Select::make('side')
                     ->options([

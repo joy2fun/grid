@@ -13,7 +13,7 @@ class GridForm
         return $schema
             ->components([
                 Select::make('stock_id')
-                    ->relationship('stock', 'name')
+                    ->relationship('stock', 'name', modifyQueryUsing: fn ($query) => $query->where('type', '!=', 'index'))
                     ->required(),
                 TextInput::make('name')
                     ->required(),

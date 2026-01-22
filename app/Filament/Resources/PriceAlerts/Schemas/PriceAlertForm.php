@@ -15,7 +15,7 @@ class PriceAlertForm
             ->components([
                 Select::make('stock_id')
                     ->label('Stock')
-                    ->relationship('stock', 'name')
+                    ->relationship('stock', 'name', modifyQueryUsing: fn ($query) => $query->where('type', '!=', 'index'))
                     ->searchable()
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} ({$record->code})")
                     ->required(),
