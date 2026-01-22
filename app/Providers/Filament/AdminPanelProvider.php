@@ -41,13 +41,14 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 'settings' => \Filament\Navigation\MenuItem::make()
                     ->label('Settings')
-                    ->url(fn (): string => AppSettings::getUrl())
+                    ->url(fn(): string => AppSettings::getUrl())
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
             // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                // AccountWidget::class,
-                // FilamentInfoWidget::class,
+                \App\Filament\Widgets\InactiveStocksTable::class,
+                \App\Filament\Widgets\PriceChangeStocksTable::class,
+                \App\Filament\Widgets\MonthlyCashFlowChart::class,
             ])
             ->plugins([
                 FilamentApexChartsPlugin::make(),
