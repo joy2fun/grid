@@ -204,10 +204,8 @@ class StockService
 
             // Try sh prefix
             $shCode = 'sh'.$code;
-            $url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={$shCode},day,,,10,qfq";
-            $response = Http::get($url);
-
-            if ($response->successful() && ! str_contains($response->body(), 'error')) {
+            $response = Http::get("https://qt.gtimg.cn/?q={$shCode}");
+            if ($response->successful() && str_contains($response->body(), $shCode)) {
                 return $shCode;
             }
 
