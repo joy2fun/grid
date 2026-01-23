@@ -16,6 +16,11 @@ class InactiveStocksTable extends TableWidget
 
     protected int|string|array $columnSpan = 'full';
 
+    public static function canView(): bool
+    {
+        return Stock::inactiveStocks()->exists();
+    }
+
     public function table(Table $table): Table
     {
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);
@@ -52,8 +57,8 @@ class InactiveStocksTable extends TableWidget
 
                         return (($record->current_price - $lastTrade->price) / $lastTrade->price) * 100;
                     })
-                    ->formatStateUsing(fn (?float $state): string => $state !== null ? number_format($state, 2).'%' : 'N/A')
-                    ->color(fn (?float $state): string => match (true) {
+                    ->formatStateUsing(fn(?float $state): string => $state !== null ? number_format($state, 2) . '%' : 'N/A')
+                    ->color(fn(?float $state): string => match (true) {
                         $state === null => 'gray',
                         $state > 0 => 'success',
                         $state < 0 => 'danger',

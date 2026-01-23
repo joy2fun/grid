@@ -16,11 +16,16 @@ class PriceChangeStocksTable extends TableWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    public function table(Table $table): Table
+    public static function canView(): bool
+    {
+        return static::getPriceChangeStocks()->isNotEmpty();
+    }
+
+    protected static function getPriceChangeStocks(): \Illuminate\Support\Collection
     {
         $threshold = (float) AppSetting::get('price_change_threshold', 5);
 
-        $stocks = Stock::query()
+        return Stock::query()
             ->where('type', '!=', 'index')
             ->whereHas('trades')
             ->with(['trades' => function ($query) {
@@ -37,7 +42,14 @@ class PriceChangeStocksTable extends TableWidget
                 $priceChangePercentage = (($stock->current_price - $lastTrade->price) / $lastTrade->price) * 100;
 
                 return abs($priceChangePercentage) >= $threshold;
-            })
+            });
+    }
+
+    public function table(Table $table): Table
+    {
+        $threshold = (float) AppSetting::get('price_change_threshold', 5);
+
+        $stocks = static::getPriceChangeStocks()
             ->sortByDesc(function (Stock $stock) {
                 $lastTrade = $stock->trades->first();
                 if (! $lastTrade || $lastTrade->price === 0) {
@@ -77,8 +89,8 @@ class PriceChangeStocksTable extends TableWidget
 
                         return (($record->current_price - $lastTrade->price) / $lastTrade->price) * 100;
                     })
-                    ->formatStateUsing(fn (?float $state): string => $state !== null ? number_format($state, 2).'%' : 'N/A')
-                    ->color(fn (?float $state): string => match (true) {
+                    ->formatStateUsing(fn(?float $state): string => $state !== null ? number_format($state, 2) . '%' : 'N/A')
+                    ->color(fn(?float $state): string => match (true) {
                         $state === null => 'gray',
                         $state > 0 => 'success',
                         $state < 0 => 'danger',
