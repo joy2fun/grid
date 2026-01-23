@@ -36,11 +36,9 @@ class InactiveStocksTable extends TableWidget
                     ->sortable(),
                 TextColumn::make('current_price')
                     ->label('Current')
-                    ->money('CNY')
                     ->sortable(),
                 TextColumn::make('lastTradePrice')
                     ->label('Last Trade')
-                    ->money('CNY')
                     ->getStateUsing(function (Stock $record): ?float {
                         return $record->trades->first()?->price;
                     }),
