@@ -187,6 +187,39 @@ class StockService
     }
 
     /**
+     * Auto prefix stock code with sh, sz or hk
+     *
+     * @param  string  $code  The input stock code
+     * @return string The prefixed stock code
+     */
+    public function autoPrefixCode(string $code): string
+    {
+        // Check if input is a 6-digit number
+        if (preg_match('/^\d{6}$/', $code)) {
+            // Query stocks table for codes ending with this number
+            $stock = Stock::where('code', 'like', "%{$code}")->first();
+            if ($stock) {
+                return $stock->code;
+            }
+
+            // Try sh prefix
+            $shCode = 'sh'.$code;
+            $url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={$shCode},day,,,10,qfq";
+            $response = Http::get($url);
+
+            if ($response->successful() && ! str_contains($response->body(), 'error')) {
+                return $shCode;
+            }
+
+            // Use sz prefix as fallback
+            return 'sz'.$code;
+        }
+
+        // Not a 6-digit number, use hk prefix
+        return 'hk'.$code;
+    }
+
+    /**
      * Extract stock name from API response
      *
      * @param  array  $data  The API response data

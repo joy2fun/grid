@@ -24,7 +24,7 @@ class StockPriceService
             }
 
             // Ensure the code follows the format like sh601166 or sz000001
-            if (! preg_match('/^(sh|sz)\d{6}$/', $code)) {
+            if (! preg_match('/^(sh|sz|hk).+$/', $code)) {
                 throw new \InvalidArgumentException("Invalid stock code format: {$code}. Expected format: shXXXXXX or szXXXXXX");
             }
             $validatedCodes[] = $code;
@@ -72,38 +72,56 @@ class StockPriceService
                 // Split the data string by '~'
                 $dataArray = explode('~', $dataString);
 
-                // Map the data according to the specification
-                // Index 5: Open price
-                // Index 33: High price
-                // Index 34: Low price
-                // Index 35: Current/Close price (before first slash)
-                $currentPrice = null;
-                if (isset($dataArray[35])) {
-                    $priceInfo = $dataArray[35];
-                    $slashPos = strpos($priceInfo, '/');
-                    if ($slashPos !== false) {
-                        $currentPrice = substr($priceInfo, 0, $slashPos);
-                    } else {
-                        $currentPrice = $priceInfo;
+                // Determine format based on code prefix
+                $isHK = strpos($code, 'hk') === 0;
+
+                if ($isHK) {
+                    // HK format:
+                    $currentPrice = self::validateNumericValue($dataArray[35] ?? null);
+                    $openPrice = self::validateNumericValue($dataArray[5] ?? null);
+                    $highPrice = self::validateNumericValue($dataArray[33] ?? null);
+                    $lowPrice = self::validateNumericValue($dataArray[34] ?? null);
+                    $name = iconv('gbk', 'utf-8', $dataArray[1] ?? null);
+                    $stockCode = $dataArray[2] ?? $code;
+                    $volume = self::validateNumericValue($dataArray[6] ?? null);
+                    $timestamp = self::convertHKTimestamp($dataArray[30] ?? null);
+                } else {
+                    // SH/SZ format:
+                    // Index 5: Open price
+                    // Index 33: High price
+                    // Index 34: Low price
+                    // Index 35: Current/Close price (before first slash)
+                    $currentPrice = null;
+                    if (isset($dataArray[35])) {
+                        $priceInfo = $dataArray[35];
+                        $slashPos = strpos($priceInfo, '/');
+                        if ($slashPos !== false) {
+                            $currentPrice = substr($priceInfo, 0, $slashPos);
+                        } else {
+                            $currentPrice = $priceInfo;
+                        }
                     }
+
+                    $openPrice = self::validateNumericValue($dataArray[5] ?? null);
+                    $highPrice = self::validateNumericValue($dataArray[33] ?? null);
+                    $lowPrice = self::validateNumericValue($dataArray[34] ?? null);
+                    $currentPrice = self::validateNumericValue($currentPrice);
+                    $name = iconv('gbk', 'utf-8', $dataArray[1] ?? null);
+                    $stockCode = $dataArray[2] ?? $code;
+                    $volume = self::validateNumericValue($dataArray[6] ?? null);
+                    $timestamp = self::convertToDatestring($dataArray[30] ?? null);
                 }
 
-                // Validate numeric values
-                $openPrice = self::validateNumericValue($dataArray[5] ?? null);
-                $highPrice = self::validateNumericValue($dataArray[33] ?? null);
-                $lowPrice = self::validateNumericValue($dataArray[34] ?? null);
-                $currentPrice = self::validateNumericValue($currentPrice);
-
                 $result[$code] = [
-                    'name' => iconv('gbk', 'utf-8', $dataArray[1] ?? null),
-                    'code' => $dataArray[2] ?? $code,
+                    'name' => $name,
+                    'code' => $stockCode,
                     'current_price' => $currentPrice,
-                    'high_price' => $highPrice,  // High price at index 33
-                    'low_price' => $lowPrice,  // Low price at index 34
-                    'close_price' => $currentPrice,  // Close price is the same as current
-                    'open_price' => $openPrice,  // Open price at index 5
-                    'volume' => self::validateNumericValue($dataArray[6] ?? null), // Volume at index 6
-                    'timestamp' => self::convertToDatestring($dataArray[30] ?? null),
+                    'high_price' => $highPrice,
+                    'low_price' => $lowPrice,
+                    'close_price' => $currentPrice,
+                    'open_price' => $openPrice,
+                    'volume' => $volume,
+                    'timestamp' => $timestamp,
                 ];
             } else {
                 // If the code wasn't found in the response, return null for this code
@@ -141,5 +159,21 @@ class StockPriceService
         }
 
         return \DateTime::createFromFormat('YmdHis', $dateString)->format('Y-m-d');
+    }
+
+    /**
+     * Convert HK timestamp format (Y/m/d H:i:s) to Y-m-d
+     *
+     * @param  ?string  $timestamp  The timestamp in format "2026/01/23 09:31:41"
+     * @return string|null The formatted date string
+     */
+    private static function convertHKTimestamp(?string $timestamp): ?string
+    {
+        if ($timestamp === null) {
+            return null;
+        }
+
+        $dateTime = \DateTime::createFromFormat('Y/m/d H:i:s', $timestamp);
+        return $dateTime ? $dateTime->format('Y-m-d') : null;
     }
 }
