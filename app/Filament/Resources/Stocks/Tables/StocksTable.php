@@ -50,6 +50,19 @@ class StocksTable
                     ->sortable()
                     ->default('-'),
 
+                TextColumn::make('peak_percentage')
+                    ->label('Peak %')
+                    ->getStateUsing(function (Stock $record) {
+                        if (! $record->current_price || ! $record->peak_value || $record->peak_value <= 0) {
+                            return null;
+                        }
+
+                        return ($record->current_price / $record->peak_value) * 100;
+                    })
+                    ->badge()
+                    ->color(fn ($state) => $state >= 80 ? 'success' : ($state >= 50 ? 'warning' : 'danger'))
+                    ->formatStateUsing(fn ($state) => number_format($state, 2).'%'),
+
                 TextColumn::make('last_trade_at')
                     ->label('Last Trade')
                     ->getStateUsing(fn (Stock $record) => $record->trades->max('executed_at'))
