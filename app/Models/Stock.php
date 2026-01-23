@@ -63,7 +63,7 @@ class Stock extends Model
         // Only include stocks with trades older than threshold and not index type
         return static::where('type', '!=', 'index')
             ->whereHas('trades', function ($subquery) use ($cutoffDate) {
-                $subquery->where('created_at', '<', $cutoffDate);
+                $subquery->where('executed_at', '<', $cutoffDate);
             });
     }
 }

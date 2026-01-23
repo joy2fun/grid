@@ -33,15 +33,10 @@ class InactiveStocksTable extends TableWidget
                     }])
             )
             ->columns([
-                TextColumn::make('code')
-                    ->label('Code')
-                    ->sortable(),
                 TextColumn::make('name')
-                    ->label('Name')
-                    ->sortable(),
+                    ->label('Name'),
                 TextColumn::make('current_price')
-                    ->label('Current')
-                    ->sortable(),
+                    ->label('Current'),
                 TextColumn::make('lastTradePrice')
                     ->label('Last Trade')
                     ->getStateUsing(function (Stock $record): ?float {
@@ -57,8 +52,8 @@ class InactiveStocksTable extends TableWidget
 
                         return (($record->current_price - $lastTrade->price) / $lastTrade->price) * 100;
                     })
-                    ->formatStateUsing(fn(?float $state): string => $state !== null ? number_format($state, 2) . '%' : 'N/A')
-                    ->color(fn(?float $state): string => match (true) {
+                    ->formatStateUsing(fn (?float $state): string => $state !== null ? number_format($state, 2).'%' : 'N/A')
+                    ->color(fn (?float $state): string => match (true) {
                         $state === null => 'gray',
                         $state > 0 => 'success',
                         $state < 0 => 'danger',

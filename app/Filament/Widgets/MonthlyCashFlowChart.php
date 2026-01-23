@@ -41,8 +41,7 @@ class MonthlyCashFlowChart extends ApexChartWidget
             }
         }
 
-        $netCashFlow = $totalSell - $totalBuy;
-        $subHeadingText = 'Outflow: ¥'.number_format($totalBuy, 2).' | Inflow: ¥'.number_format($totalSell, 2).' | Net: ¥'.number_format($netCashFlow, 2);
+        $subHeadingText = 'Out: ¥'.number_format($totalBuy, 2).' | In: ¥'.number_format($totalSell, 2);
 
         // Group trades by month
         $monthlyData = [];
@@ -83,10 +82,10 @@ class MonthlyCashFlowChart extends ApexChartWidget
                     'show' => false,
                 ],
             ],
-            'subtitle' => [
+            'title' => [
                 'text' => $subHeadingText,
                 'align' => 'left',
-                'margin' => 2,
+                'margin' => 10,
                 'style' => [
                     'fontSize' => '12px',
                     'fontWeight' => 'normal',

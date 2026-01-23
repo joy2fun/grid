@@ -13,9 +13,6 @@ class TradesTable
     {
         return $table
             ->columns([
-                TextColumn::make('grid.name')
-                    ->label('Grid')
-                    ->sortable(),
                 TextColumn::make('stock.name')
                     ->label('Stock')
                     ->sortable(),
