@@ -194,6 +194,10 @@ class StockService
      */
     public function autoPrefixCode(string $code): string
     {
+        if (str($code)->startsWith(['sh', 'sz', 'hk'])) {
+            return $code;
+        }
+
         // Check if input is a 6-digit number
         if (preg_match('/^\d{6}$/', $code)) {
             // Query stocks table for codes ending with this number

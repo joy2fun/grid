@@ -87,12 +87,8 @@ class ManageTrades extends ManageRecords
                             // Find or create stock by prefixed code
                             $stock = Stock::firstOrCreate(
                                 ['code' => $prefixedCode],
+                                ['name' => $prefixedCode]
                             );
-
-                            if ($stock->name == 'Unknown') {
-                                $stock->name = $prefixedCode;
-                                $stock->save();
-                            }
 
                             // Check for duplicates (same time and stock_id)
                             $exists = Trade::where('stock_id', $stock->id)

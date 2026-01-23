@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Stocks\Tables;
 use App\Filament\Resources\Stocks\Pages\BacktestStock;
 use App\Models\Stock;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -84,7 +85,7 @@ class StocksTable
                         'index' => 'Index',
                     ]),
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make(),
                 Action::make('backtest')
                     ->label('Backtest')
@@ -116,6 +117,7 @@ class StocksTable
                                 ->send();
                         }
                     }),
+                DeleteAction::make()->iconButton()->iconSize('sm'),
             ]);
     }
 }

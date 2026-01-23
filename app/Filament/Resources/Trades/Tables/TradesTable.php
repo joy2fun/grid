@@ -49,7 +49,7 @@ class TradesTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()->iconButton()->iconSize('sm'),
             ])
             ->defaultSort('id', 'desc');
     }
