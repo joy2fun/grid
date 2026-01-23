@@ -53,9 +53,9 @@ class MonthlyCashFlowChart extends ApexChartWidget
 
         foreach ($monthlyData as $month => $data) {
             $categories[] = Carbon::createFromFormat('Y-m', $month)->format('M Y');
-            // Make buy values negative for outflow
-            $buyData[] = -1 * $data['buy'];
-            $sellData[] = $data['sell'];
+            // Make buy values negative for outflow and round to integer
+            $buyData[] = round(-1 * $data['buy']);
+            $sellData[] = round($data['sell']);
         }
 
         return [
@@ -64,7 +64,7 @@ class MonthlyCashFlowChart extends ApexChartWidget
                 'height' => 300,
                 'stacked' => true,
                 'toolbar' => [
-                    'show' => true,
+                    'show' => false,
                 ],
             ],
             'series' => [

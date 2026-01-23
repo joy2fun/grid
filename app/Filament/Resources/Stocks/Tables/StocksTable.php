@@ -46,7 +46,7 @@ class StocksTable
 
                 TextColumn::make('current_price')
                     ->label('Current Price')
-                    ->numeric(decimalPlaces: 2)
+                    ->numeric(decimalPlaces: 3)
                     ->sortable()
                     ->default('-'),
 
