@@ -9,10 +9,23 @@ use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
 
 class ManageStocks extends ManageRecords
 {
     protected static string $resource = StockResource::class;
+
+    public function getTabs(): array
+    {
+        return [
+            'all' => Tab::make('All'),
+            'etf' => Tab::make('ETF')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 'etf')),
+            'index' => Tab::make('Index')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 'index')),
+        ];
+    }
 
     protected function getHeaderActions(): array
     {
@@ -168,7 +181,6 @@ class ManageStocks extends ManageRecords
                             ->when(! empty($errors), fn ($notification) => $notification->danger())
                             ->when(empty($errors) && ($importedCount > 0 || $updatedCount > 0), fn ($notification) => $notification->success())
                             ->send();
-
                     } catch (\Exception $e) {
                         \Illuminate\Support\Facades\DB::rollBack();
 
