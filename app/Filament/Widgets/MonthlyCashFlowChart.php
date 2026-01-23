@@ -28,6 +28,22 @@ class MonthlyCashFlowChart extends ApexChartWidget
             ->orderBy('executed_at')
             ->get();
 
+        // Calculate total cash flow
+        $totalBuy = 0;
+        $totalSell = 0;
+
+        foreach ($trades as $trade) {
+            $amount = $trade->price * $trade->quantity;
+            if ($trade->side === 'buy') {
+                $totalBuy += $amount;
+            } else {
+                $totalSell += $amount;
+            }
+        }
+
+        $netCashFlow = $totalSell - $totalBuy;
+        $subHeadingText = 'Outflow: ¥'.number_format($totalBuy, 2).' | Inflow: ¥'.number_format($totalSell, 2).' | Net: ¥'.number_format($netCashFlow, 2);
+
         // Group trades by month
         $monthlyData = [];
         for ($i = 11; $i >= 0; $i--) {
@@ -61,10 +77,19 @@ class MonthlyCashFlowChart extends ApexChartWidget
         return [
             'chart' => [
                 'type' => 'bar',
-                'height' => 300,
+                'height' => 350,
                 'stacked' => true,
                 'toolbar' => [
                     'show' => false,
+                ],
+            ],
+            'subtitle' => [
+                'text' => $subHeadingText,
+                'align' => 'left',
+                'margin' => 2,
+                'style' => [
+                    'fontSize' => '12px',
+                    'fontWeight' => 'normal',
                 ],
             ],
             'series' => [
@@ -87,8 +112,11 @@ class MonthlyCashFlowChart extends ApexChartWidget
                 ],
             ],
             'yaxis' => [
+                'labels' => [
+                    'show' => false,
+                ],
                 'title' => [
-                    'text' => 'Cash Flow (¥)',
+                    'text' => '',
                 ],
             ],
             'plotOptions' => [
@@ -101,8 +129,7 @@ class MonthlyCashFlowChart extends ApexChartWidget
                 'enabled' => false,
             ],
             'legend' => [
-                'position' => 'top',
-                'horizontalAlign' => 'right',
+                'show' => false,
             ],
             'tooltip' => [
                 'enabled' => true,
