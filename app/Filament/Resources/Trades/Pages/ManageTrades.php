@@ -90,25 +90,20 @@ class ManageTrades extends ManageRecords
 
                                     $result = null;
 
-                                    if (config('services.baidu.ocr.token')) {
-                                        // Use Baidu + DeepSeek workflow
-                                        $baiduOCRService = app(BaiduOCRService::class);
-                                        $ocrData = $baiduOCRService->ocr($path);
+                                    $baiduOCRService = app(BaiduOCRService::class);
+                                    $ocrData = $baiduOCRService->ocr($path);
 
-                                        if ($ocrData['error_msg'] ?? null) {
-                                            Notification::make()
-                                                ->title('Baidu OCR Failed')
-                                                ->body($ocrData['error_msg'])
-                                                ->danger()
-                                                ->send();
+                                    if (! $ocrData || isset($ocrData['error_msg'])) {
+                                        Notification::make()
+                                            ->title('Baidu OCR Failed')
+                                            ->body($ocrData['error_msg'] ?? 'unknown error')
+                                            ->danger()
+                                            ->send();
 
-                                            return;
-                                        }
-
-                                        if ($ocrData) {
-                                            $result = $deepSeekService->parseTradeFromOCR($ocrData);
-                                        }
+                                        return;
                                     }
+
+                                    $result = $deepSeekService->parseTradeFromOCR($ocrData);
 
                                     if ($result && isset($result['trades'])) {
                                         $set('json_data', json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
