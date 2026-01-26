@@ -42,6 +42,8 @@ class AppSettings extends Page implements HasForms
             'bark_url' => AppSetting::get('bark_url'),
             'inactive_stocks_threshold' => AppSetting::get('inactive_stocks_threshold', 30),
             'price_change_threshold' => AppSetting::get('price_change_threshold', 5),
+            'deepseek_api_key' => AppSetting::get('deepseek_api_key'),
+            'baidu_ocr_token' => AppSetting::get('baidu_ocr_token'),
         ]);
     }
 
@@ -84,6 +86,22 @@ class AppSettings extends Page implements HasForms
                             ->default(5)
                             ->helperText('Percentage price change (rise or drop) compared to last traded price to trigger notifications'),
                     ])
+                    ->columns(1),
+
+                Section::make('API & OCR Settings')
+                    ->description('Overwrite environment variables for external services')
+                    ->schema([
+                        TextInput::make('deepseek_api_key')
+                            ->label('DeepSeek API Key')
+                            ->password()
+                            ->helperText('Overwrites DEEPSEEK_API_KEY if provided'),
+                        TextInput::make('baidu_ocr_token')
+                            ->label('Baidu OCR Token')
+                            ->password()
+                            ->helperText('Overwrites BAIDU_OCR_TOKEN if provided'),
+                    ])
+                    ->collapsible()
+                    ->collapsed()
                     ->columns(1),
             ])
             ->statePath('data');
@@ -133,6 +151,8 @@ class AppSettings extends Page implements HasForms
         AppSetting::set('bark_url', $data['bark_url'] ?? null);
         AppSetting::set('inactive_stocks_threshold', (int) ($data['inactive_stocks_threshold'] ?? 30));
         AppSetting::set('price_change_threshold', (float) ($data['price_change_threshold'] ?? 5));
+        AppSetting::set('deepseek_api_key', $data['deepseek_api_key'] ?? null);
+        AppSetting::set('baidu_ocr_token', $data['baidu_ocr_token'] ?? null);
 
         Notification::make()
             ->title('Settings saved')

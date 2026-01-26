@@ -174,6 +174,7 @@ class StockPriceService
         }
 
         $dateTime = \DateTime::createFromFormat('Y/m/d H:i:s', $timestamp);
+
         return $dateTime ? $dateTime->format('Y-m-d') : null;
     }
 }
