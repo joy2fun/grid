@@ -13,15 +13,17 @@ use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\HtmlString;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ManageTrades extends ManageRecords
@@ -126,50 +128,60 @@ class ManageTrades extends ManageRecords
                         ->placeholder('e.g. 601166')
                         ->helperText('This code will be used if the image parsing fails to extract a stock code.')
                         ->live(),
-                    TextEntry::make('import_preview')
-                        ->label('Trade Preview')
-                        ->state(function ($get) {
+                    Grid::make(1)
+                        ->schema(function ($get) {
                             $json = $get('json_data');
                             if (! $json) {
-                                return 'No data to preview';
+                                return [
+                                    TextEntry::make('no_data')
+                                        ->hiddenLabel()
+                                        ->default('No data to preview')
+                                        ->size('text-sm'),
+                                ];
                             }
 
                             $data = json_decode($json, true);
                             if (! $data || ! isset($data['trades']) || ! is_array($data['trades'])) {
-                                return 'Invalid JSON format';
+                                return [
+                                    TextEntry::make('invalid_json')
+                                        ->hiddenLabel()
+                                        ->default('Invalid JSON format')
+                                        ->size('text-sm'),
+                                ];
                             }
 
-                            $html = '<div class="fi-ta-ctn overflow-hidden border border-gray-200 dark:border-white/10 rounded-xl">';
-                            $html .= '<table class="fi-ta-table w-full table-auto divide-y divide-gray-200 dark:divide-white/5 text-sm">';
-                            $html .= '<thead class="bg-gray-50 dark:bg-white/5">';
-                            $html .= '<tr>';
-                            foreach (['Code', 'Name', 'Side', 'Qty', 'Price', 'Time'] as $header) {
-                                $html .= '<th class="fi-ta-header-cell px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-gray-950 dark:text-white">'.$header.'</th>';
-                            }
-                            $html .= '</tr></thead>';
-                            $html .= '<tbody class="divide-y divide-gray-200 dark:divide-white/5 bg-white dark:bg-gray-900">';
-                            foreach ($data['trades'] as $trade) {
-                                $side = strtoupper($trade['side'] ?? '-');
-                                $sideColorClasses = $side === 'BUY'
-                                    ? 'bg-danger-50 text-danger-700 dark:bg-danger-400/10 dark:text-danger-400 ring-danger-600/10'
-                                    : 'bg-success-50 text-success-700 dark:bg-success-400/10 dark:text-success-400 ring-success-600/10';
-
-                                $code = $trade['code'] ?? $get('fallback_code') ?? '-';
-
-                                $html .= '<tr>';
-                                $html .= '<td class="fi-ta-cell px-3 py-2 font-mono">'.$code.'</td>';
-                                $html .= '<td class="fi-ta-cell px-3 py-2">'.($trade['name'] ?? '-').'</td>';
-                                $html .= '<td class="fi-ta-cell px-3 py-2">';
-                                $html .= '<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset '.$sideColorClasses.'">'.$side.'</span>';
-                                $html .= '</td>';
-                                $html .= '<td class="fi-ta-cell px-3 py-2 font-mono">'.($trade['quantity'] ?? '0').'</td>';
-                                $html .= '<td class="fi-ta-cell px-3 py-2 font-mono text-gray-950 dark:text-white">'.($trade['price'] ?? '0.00').'</td>';
-                                $html .= '<td class="fi-ta-cell px-3 py-2 text-xs text-gray-500 dark:text-gray-400">'.($trade['time'] ?? '-').'</td>';
-                                $html .= '</tr>';
-                            }
-                            $html .= '</tbody></table></div>';
-
-                            return new HtmlString($html);
+                            return [
+                                RepeatableEntry::make('trades')
+                                    // ->table([
+                                    //     TableColumn::make('Code'),
+                                    //     TableColumn::make('Name'),
+                                    //     TableColumn::make('Side'),
+                                    //     TableColumn::make('Qty'),
+                                    //     TableColumn::make('Price'),
+                                    //     TableColumn::make('Time'),
+                                    // ])
+                                    ->schema([
+                                        TextEntry::make('code')
+                                            ->weight('medium')
+                                            ->color('primary'),
+                                        TextEntry::make('name'),
+                                        TextEntry::make('side')
+                                            ->formatStateUsing(fn ($state) => strtoupper($state ?? '-'))
+                                            ->badge()
+                                            ->color(fn ($state) => strtoupper($state ?? '') === 'BUY' ? 'danger' : 'success'),
+                                        TextEntry::make('quantity')
+                                            ->weight('medium'),
+                                        TextEntry::make('price')
+                                            ->formatStateUsing(fn ($state) => number_format((float) ($state ?? 0), 2)),
+                                        TextEntry::make('time')
+                                            ->hiddenLabel()
+                                            ->color('gray'),
+                                    ])
+                                    ->state(function () use ($data) {
+                                        return $data['trades'];
+                                    })
+                                    ->columns(['md' => 6, 'default' => 3]),
+                            ];
                         }),
                     Section::make('Raw JSON Data')
                         ->collapsible()
