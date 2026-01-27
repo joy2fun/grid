@@ -55,6 +55,41 @@ class Stock extends Model
         return $lastTrade->created_at->diffInDays() > $threshold;
     }
 
+    public function getXirrAttribute(): ?float
+    {
+        $trades = $this->trades()->orderBy('executed_at')->get();
+
+        if ($trades->isEmpty()) {
+            return null;
+        }
+
+        $cashFlows = [];
+        $dates = [];
+
+        foreach ($trades as $trade) {
+            $cost = (float) $trade->quantity * (float) $trade->price;
+            $date = $trade->executed_at->toDateString();
+
+            if ($trade->side === 'buy') {
+                $cashFlows[] = -$cost;
+            } else {
+                $cashFlows[] = $cost;
+            }
+
+            $dates[] = $date;
+        }
+
+        // Current valuation as final cash flow
+        $holding = $this->holding;
+        if ($holding && $holding->quantity > 0 && $this->current_price) {
+            $holdingValue = (float) $holding->quantity * (float) $this->current_price;
+            $cashFlows[] = $holdingValue;
+            $dates[] = now()->toDateString();
+        }
+
+        return \App\Utilities\Helper::calculateXIRR($cashFlows, $dates);
+    }
+
     public static function inactiveStocks()
     {
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);

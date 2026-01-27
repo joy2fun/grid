@@ -42,7 +42,7 @@ class StocksTable
                     })
                     ->badge()
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
-                    ->formatStateUsing(fn ($state) => number_format($state, 2).'%'),
+                    ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state),
 
                 TextColumn::make('current_price')
                     ->label('Current Price')
@@ -61,7 +61,15 @@ class StocksTable
                     })
                     ->badge()
                     ->color(fn ($state) => $state >= 80 ? 'success' : ($state >= 50 ? 'warning' : 'danger'))
-                    ->formatStateUsing(fn ($state) => number_format($state, 2).'%'),
+                    ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state),
+
+                TextColumn::make('xirr')
+                    ->label('XIRR')
+                    ->getStateUsing(fn (Stock $record) => ($record->xirr !== null) ? $record->xirr * 100 : null)
+                    ->badge()
+                    ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
+                    ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state)
+                    ->default('-'),
 
                 TextColumn::make('last_trade_at')
                     ->label('Last Trade')
@@ -88,7 +96,8 @@ class StocksTable
             ])
             ->modifyQueryUsing(fn ($query) => $query->with([
                 'dayPrices' => fn ($q) => $q->latest('date')->limit(2),
-                'trades' => fn ($q) => $q->select('id', 'stock_id', 'executed_at'),
+                'trades' => fn ($q) => $q->select('id', 'stock_id', 'side', 'price', 'quantity', 'executed_at'),
+                'holding',
             ]))
             ->filters([
                 SelectFilter::make('type')
