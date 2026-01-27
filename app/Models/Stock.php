@@ -46,13 +46,13 @@ class Stock extends Model
     public function isInactive(): bool
     {
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);
-        $lastTrade = $this->trades()->latest()->first();
+        $lastTrade = $this->trades()->latest('executed_at')->first();
 
         if (! $lastTrade) {
             return false; // No trades ever, not considered inactive
         }
 
-        return $lastTrade->created_at->diffInDays() > $threshold;
+        return $lastTrade->executed_at->diffInDays() > $threshold;
     }
 
     public function getXirrAttribute(): ?float
@@ -95,10 +95,11 @@ class Stock extends Model
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);
         $cutoffDate = Carbon::now()->subDays($threshold);
 
-        // Only include stocks with trades older than threshold and not index type
+        // Only include stocks with trades, but none more recent than the threshold, and not index type
         return static::where('type', '!=', 'index')
-            ->whereHas('trades', function ($subquery) use ($cutoffDate) {
-                $subquery->where('executed_at', '<', $cutoffDate);
+            ->whereHas('trades')
+            ->whereDoesntHave('trades', function ($subquery) use ($cutoffDate) {
+                $subquery->where('executed_at', '>=', $cutoffDate);
             });
     }
 }
