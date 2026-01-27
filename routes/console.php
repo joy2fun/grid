@@ -19,6 +19,10 @@ Schedule::command('app:sync-realtime-prices')
     ->weekdays()
     ->between('13:00', '15:01');
 
+Schedule::command('app:sync-realtime-prices')
+    ->weekdays()
+    ->at('17:01');
+
 Schedule::command('app:check-price-alerts')
     ->everyMinute()
     ->weekdays()

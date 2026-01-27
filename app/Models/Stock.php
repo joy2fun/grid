@@ -57,6 +57,10 @@ class Stock extends Model
 
     public function getXirrAttribute(): ?float
     {
+        if ($this->type == 'index') {
+            return null;
+        }
+
         $trades = $this->trades()->orderBy('executed_at')->get();
 
         if ($trades->isEmpty()) {
