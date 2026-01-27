@@ -48,6 +48,8 @@ class TradesTable
                 EditAction::make(),
                 DeleteAction::make()->iconButton()->iconSize('sm'),
             ])
-            ->defaultSort('id', 'desc');
+            ->defaultSort('executed_at', 'desc')
+            ->paginated([25, 50, 100])
+            ->defaultPaginationPageOption(25);
     }
 }

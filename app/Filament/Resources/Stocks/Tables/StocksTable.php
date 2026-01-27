@@ -131,6 +131,8 @@ class StocksTable
                         }
                     }),
                 DeleteAction::make()->iconButton()->iconSize('sm'),
-            ]);
+            ])
+            ->paginated([25, 50, 100])
+            ->defaultPaginationPageOption(25);
     }
 }
