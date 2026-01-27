@@ -42,7 +42,7 @@ class ManageTrades extends ManageRecords
                     FileUpload::make('image')
                         ->label('Upload Trade Image')
                         ->image()
-                        ->disk('public')
+                        ->disk('local')
                         ->directory('trade-imports')
                         ->maxSize(5120)
                         ->helperText('Upload an image of your trade records to parse it automatically.')
@@ -70,13 +70,13 @@ class ManageTrades extends ManageRecords
 
                                     if ($file instanceof TemporaryUploadedFile) {
                                         $path = $file->getRealPath();
-                                    } elseif (! str_starts_with($path, '/')) {
-                                        $path = Storage::disk('public')->path($state);
+                                    } elseif (! file_exists($path)) {
+                                        $path = Storage::disk('local')->path($state);
                                     }
 
                                     if (! file_exists($path)) {
-                                        // Try one more time with local disk (private)
-                                        $path = Storage::disk('local')->path($state);
+                                        // Try public disk as well for robustness
+                                        $path = Storage::disk('public')->path($state);
                                     }
 
                                     if (! file_exists($path)) {
@@ -311,7 +311,7 @@ class ManageTrades extends ManageRecords
                         ->image()
                         ->multiple()
                         ->previewable(false)
-                        ->disk('public')
+                        ->disk('local')
                         ->directory('trade-imports')
                         ->maxSize(5120)
                         ->required()

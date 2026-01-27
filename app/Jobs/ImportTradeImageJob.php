@@ -37,9 +37,32 @@ class ImportTradeImageJob implements ShouldQueue
         $fullPath = Storage::disk($this->disk)->path($this->imagePath);
 
         if (! file_exists($fullPath)) {
-            Log::error("ImportTradeImageJob: Image file not found at {$fullPath}");
+            // Try to fallback to other common disks
+            $alternativeDisks = ['public', 'local'];
+            $found = false;
 
-            return;
+            foreach ($alternativeDisks as $altDisk) {
+                if ($altDisk === $this->disk) {
+                    continue;
+                }
+                $altPath = Storage::disk($altDisk)->path($this->imagePath);
+                if (file_exists($altPath)) {
+                    $fullPath = $altPath;
+                    $found = true;
+                    Log::info("ImportTradeImageJob: Found file on alternative disk [{$altDisk}] at {$fullPath}");
+                    break;
+                }
+            }
+
+            if (! $found) {
+                Log::error("ImportTradeImageJob: Image file not found at {$fullPath}", [
+                    'imagePath' => $this->imagePath,
+                    'disk' => $this->disk,
+                    'storage_path' => storage_path(),
+                ]);
+
+                return;
+            }
         }
 
         $ocrData = $baiduOCRService->ocr($fullPath);
