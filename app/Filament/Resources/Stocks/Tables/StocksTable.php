@@ -10,12 +10,16 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class StocksTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return $query->with('trades');
+            })
             ->columns([
                 TextColumn::make('name')
                     ->label('Name')
@@ -24,25 +28,10 @@ class StocksTable
 
                 TextColumn::make('rise_percentage')
                     ->label('Rise %')
-                    ->getStateUsing(function (Stock $record) {
-                        $prices = $record->dayPrices->sortByDesc('date')->values();
-
-                        if ($prices->count() < 2) {
-                            return null;
-                        }
-
-                        $latest = $prices[0]->close_price;
-                        $previous = $prices[1]->close_price;
-
-                        if ($previous <= 0) {
-                            return null;
-                        }
-
-                        return (($latest - $previous) / $previous) * 100;
-                    })
                     ->badge()
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
-                    ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state),
+                    ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : '-')
+                    ->sortable(),
 
                 TextColumn::make('current_price')
                     ->label('Current Price')
@@ -72,10 +61,7 @@ class StocksTable
                     ->default('-'),
 
                 TextColumn::make('last_trade_at')
-                    ->label('Last Trade')
-                    ->getStateUsing(fn (Stock $record) => $record->trades->max('executed_at'))
-                    ->dateTime()
-                    ->formatStateUsing(fn ($state) => $state?->diffForHumans() ?? '-'),
+                    ->label('Last Trade'),
 
                 TextColumn::make('code')
                     ->label('Code')

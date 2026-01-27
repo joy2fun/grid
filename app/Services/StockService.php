@@ -167,6 +167,7 @@ class StockService
             // Prepare stock updates including current_price
             $stockUpdates[$stock->id] = [
                 'current_price' => $data['current_price'],
+                'rise_percentage' => $data['rise_percentage'] ?? null,
                 'updated_at' => now(),
             ];
 

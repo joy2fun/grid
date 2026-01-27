@@ -16,6 +16,7 @@ class Stock extends Model
         'type',
         'peak_value',
         'current_price',
+        'rise_percentage',
     ];
 
     public function dayPrices()
@@ -43,6 +44,13 @@ class Stock extends Model
         return $this->hasMany(Trade::class);
     }
 
+    public function getLastTradeAtAttribute(): string
+    {
+        $dt = $this->trades->max('executed_at');
+
+        return $dt ? Carbon::parse($dt)->diffForHumans() : '-';
+    }
+
     public function isInactive(): bool
     {
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);
@@ -61,11 +69,13 @@ class Stock extends Model
             return null;
         }
 
-        $trades = $this->trades()->orderBy('executed_at')->get();
+        $trades = $this->trades;
 
         if ($trades->isEmpty()) {
             return null;
         }
+
+        $trades = collect($trades)->sortBy('executed_at');
 
         $cashFlows = [];
         $dates = [];

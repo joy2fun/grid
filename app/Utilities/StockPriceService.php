@@ -122,6 +122,7 @@ class StockPriceService
                     'open_price' => $openPrice,
                     'volume' => $volume,
                     'timestamp' => $timestamp,
+                    'rise_percentage' => self::validateNumericValue($dataArray[32] ?? null),
                 ];
             } else {
                 // If the code wasn't found in the response, return null for this code
