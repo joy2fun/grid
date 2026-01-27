@@ -47,7 +47,7 @@ class PriceChangeStocksTable extends TableWidget
 
     public function table(Table $table): Table
     {
-        $threshold = (float) AppSetting::get('price_change_threshold', 5);
+        // ... (threshold logic if needed, but we call getPriceChangeStocks)
 
         $stocks = static::getPriceChangeStocks()
             ->sortByDesc(function (Stock $stock) {
@@ -60,7 +60,23 @@ class PriceChangeStocksTable extends TableWidget
             })
             ->values();
 
-        $query = $stocks->isNotEmpty() ? $stocks->toQuery() : Stock::query()->whereRaw('1 = 0');
+        if ($stocks->isEmpty()) {
+            $query = Stock::query()->whereRaw('1 = 0');
+        } else {
+            $ids = $stocks->pluck('id');
+            $idsString = $ids->implode(',');
+
+            // Build CASE statement for ordering
+            $sql = 'CASE id ';
+            foreach ($ids as $index => $id) {
+                $sql .= "WHEN {$id} THEN {$index} ";
+            }
+            $sql .= 'END';
+
+            $query = Stock::query()
+                ->whereIntegerInRaw('id', $ids)
+                ->orderByRaw($sql);
+        }
 
         return $table
             ->query($query)
@@ -91,8 +107,7 @@ class PriceChangeStocksTable extends TableWidget
                         $state < 0 => 'danger',
                         default => 'gray',
                     })
-                    ->weight('bold')
-                    ->sortable(),
+                    ->weight('bold'),  // Removed sortable() as it requires complex SQL
                 TextColumn::make('daysSinceTrade')
                     ->label('Days Since')
                     ->getStateUsing(function (Stock $record): int {
@@ -106,9 +121,8 @@ class PriceChangeStocksTable extends TableWidget
                     ->suffix(' days')
                     ->sortable(),
             ])
-            ->defaultSort('priceChange', 'desc')
             ->paginated(false)
-            ->emptyStateHeading('No Significant Price Changes')
-            ->emptyStateDescription("No stocks have price changes exceeding ±{$threshold}% from their last traded price.");
+            ->emptyStateHeading('No Significant Price Changes');
+        // Removed defaultSort as query is pre-sorted
     }
 }
