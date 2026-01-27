@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Trades\Pages;
 
 use App\Filament\Resources\Trades\TradeResource;
+use App\Jobs\ImportTradeImageJob;
 use App\Models\Stock;
 use App\Models\Trade;
 use App\Services\BaiduOCRService;
@@ -33,9 +34,9 @@ class ManageTrades extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->label('New'),
             Action::make('bulkImport')
-                ->label('Bulk Import')
+                ->label('Import')
                 ->modalHeading('Bulk Import Trades')
                 ->schema([
                     FileUpload::make('image')
@@ -297,6 +298,42 @@ class ManageTrades extends ManageRecords
                             ->danger()
                             ->send();
                     }
+                }),
+            Action::make('bulkImportBackground')
+                ->label('Bulk Import')
+                ->icon('heroicon-o-cloud-arrow-up')
+                ->color('info')
+                ->modalHeading('Bulk Import Trades (Background)')
+                ->modalDescription('Upload multiple images of your trade records. They will be processed in the background.')
+                ->schema([
+                    FileUpload::make('images')
+                        ->label('Upload Trade Images')
+                        ->image()
+                        ->multiple()
+                        ->previewable(false)
+                        ->disk('public')
+                        ->directory('trade-imports')
+                        ->maxSize(5120)
+                        ->required()
+                        ->helperText('Upload one or more images of your trade records.'),
+                    TextInput::make('fallback_code')
+                        ->label('Fallback Stock Code')
+                        ->placeholder('e.g. 601166')
+                        ->helperText('This code will be used if the image parsing fails to extract a stock code for any of the images.'),
+                ])
+                ->action(function (array $data) {
+                    $images = $data['images'];
+                    $fallbackCode = $data['fallback_code'] ?? null;
+
+                    foreach ($images as $imagePath) {
+                        ImportTradeImageJob::dispatch($imagePath, $fallbackCode);
+                    }
+
+                    Notification::make()
+                        ->title('Import Started')
+                        ->body(count($images).' image(s) have been queued for processing.')
+                        ->success()
+                        ->send();
                 }),
         ];
     }

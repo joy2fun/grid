@@ -31,7 +31,7 @@ class ManageStocks extends ManageRecords
     {
         return [
             \Filament\Actions\Action::make('sync_realtime')
-                ->label('Sync Realtime')
+                ->label('Sync')
                 ->icon('heroicon-o-arrow-path')
                 ->color('info')
                 ->action(function () {
@@ -58,9 +58,9 @@ class ManageStocks extends ManageRecords
                         ->success()
                         ->send();
                 }),
-            CreateAction::make(),
+            CreateAction::make()->label('New'),
             \Filament\Actions\Action::make('bulkImport')
-                ->label('Bulk Import')
+                ->label('Import')
                 ->modalHeading('Bulk Import Stocks')
                 ->modalDescription('Paste JSON data to import stocks in bulk')
                 ->form([
