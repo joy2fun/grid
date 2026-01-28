@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Stocks\Tables;
 
 use App\Filament\Resources\Stocks\Pages\BacktestStock;
+use App\Filament\Resources\Trades\TradeResource;
 use App\Models\Stock;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -61,7 +62,18 @@ class StocksTable
                     ->default('-'),
 
                 TextColumn::make('last_trade_at')
-                    ->label('Last Trade'),
+                    ->label('Last Trade')
+                    ->url(
+                        fn (Stock $record): ?string => $record->type === 'etf'
+                            ? TradeResource::getUrl('index', [
+                                'filters' => [
+                                    'stock_id' => [
+                                        'value' => $record->id,
+                                    ],
+                                ],
+                            ])
+                            : null
+                    ),
 
                 TextColumn::make('code')
                     ->label('Code')
@@ -74,11 +86,6 @@ class StocksTable
                     ->sortable()
                     ->numeric(decimalPlaces: 4)
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('type')
-                    ->label('Type')
-                    ->sortable()
-                    ->formatStateUsing(fn ($state) => ucfirst($state)),
             ])
             ->modifyQueryUsing(fn ($query) => $query->with([
                 'dayPrices' => fn ($q) => $q->latest('date')->limit(2),
@@ -94,7 +101,7 @@ class StocksTable
                     ]),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->iconButton()->iconSize('sm'),
                 Action::make('backtest')
                     ->label('Backtest')
                     ->icon('heroicon-o-presentation-chart-line')
