@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\Trades\TradeResource;
 use App\Models\AppSetting;
 use App\Models\Stock;
 use Filament\Tables\Columns\TextColumn;
@@ -82,7 +83,14 @@ class PriceChangeStocksTable extends TableWidget
             ->query($query)
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name'),
+                    ->label('Name')
+                    ->url(fn ($record) => TradeResource::getUrl('index', [
+                        'filters' => [
+                            'stock_id' => [
+                                'value' => $record->id,
+                            ],
+                        ],
+                    ])),
                 TextColumn::make('current_price')
                     ->label('Current'),
                 TextColumn::make('lastTradePrice')

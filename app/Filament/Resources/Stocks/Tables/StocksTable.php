@@ -38,6 +38,7 @@ class StocksTable
                     ->label('Current Price')
                     ->numeric(decimalPlaces: 3)
                     ->sortable()
+                    ->toggleable()
                     ->default('-'),
 
                 TextColumn::make('peak_percentage')
@@ -49,6 +50,7 @@ class StocksTable
 
                         return ($record->current_price / $record->peak_value) * 100;
                     })
+                    ->toggleable()
                     ->badge()
                     ->color(fn ($state) => $state >= 80 ? 'success' : ($state >= 50 ? 'warning' : 'danger'))
                     ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state),
@@ -79,6 +81,7 @@ class StocksTable
                     ->label('Code')
                     ->searchable()
                     ->sortable()
+                    ->toggleable()
                     ->copyable(),
 
                 TextColumn::make('peak_value')
