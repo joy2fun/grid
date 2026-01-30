@@ -193,4 +193,18 @@ class ManageStocks extends ManageRecords
                 }),
         ];
     }
+
+    protected function getFooterWidgets(): array
+    {
+        // Only show the chart when the 'index' tab is active
+        $activeTab = request()->query('tab');
+
+        if ($activeTab === 'index') {
+            return [
+                \App\Filament\Widgets\IndexStockPricesChart::class,
+            ];
+        }
+
+        return [];
+    }
 }
