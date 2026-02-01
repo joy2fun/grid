@@ -19,6 +19,15 @@ class IndexStockPricesChart extends ApexChartWidget
 
     protected int|string|array $columnSpan = 'full';
 
+    public ?string $timeRange = '3y';
+
+    #[\Livewire\Attributes\On('updateChart')]
+    public function updateChart(string $timeRange): void
+    {
+        $this->timeRange = $timeRange;
+        $this->updateOptions();
+    }
+
     protected function getOptions(): array
     {
         // Get all index stocks
@@ -30,21 +39,35 @@ class IndexStockPricesChart extends ApexChartWidget
             return [];
         }
 
+        // Calculate the date cutoff based on time range
+        $startDate = $this->getStartDateFromTimeRange();
+
         $series = [];
         $yAxisConfig = [];
         $allDates = collect();
 
-        // For each index stock, get all historical prices
+        // For each index stock, get historical prices within the time range
         foreach ($indexStocks as $stock) {
-            $prices = DayPrice::query()
+            $query = DayPrice::query()
                 ->where('stock_id', $stock->id)
-                ->orderBy('date', 'desc')
-                ->get()
-                ->reverse() // Ensure chronological order for chart
-                ->values();
+                ->orderBy('date', 'asc');
+
+            if ($startDate) {
+                $query->where('date', '>=', $startDate);
+            }
+
+            $prices = $query->get();
 
             if ($prices->isEmpty()) {
                 continue;
+            }
+
+            // Downsample data if too many points (target ~300 points max) to improve rendering performance
+            if ($prices->count() > 300) {
+                // Determine interval to pick every Nth record
+                // e.g. 1500 records / 300 target = 5 (keep every 5th record)
+                $interval = (int) ceil($prices->count() / 300);
+                $prices = $prices->nth($interval);
             }
 
             // Collect all unique dates for x-axis
@@ -76,6 +99,7 @@ class IndexStockPricesChart extends ApexChartWidget
                 'axisTicks' => [
                     'show' => false,
                 ],
+                'floating' => true,
             ];
         }
 
@@ -86,6 +110,9 @@ class IndexStockPricesChart extends ApexChartWidget
             'chart' => [
                 'type' => 'line',
                 'height' => 350,
+                'animations' => [
+                    'enabled' => false,
+                ],
                 'toolbar' => [
                     'show' => true,
                 ],
@@ -105,6 +132,12 @@ class IndexStockPricesChart extends ApexChartWidget
                 ],
             ],
             'yaxis' => $yAxisConfig,
+            'grid' => [
+                'padding' => [
+                    'left' => 0,
+                    'right' => 0,
+                ],
+            ],
             'stroke' => [
                 'curve' => 'smooth',
                 'width' => 2,
@@ -121,5 +154,21 @@ class IndexStockPricesChart extends ApexChartWidget
                 'intersect' => false,
             ],
         ];
+    }
+
+    protected function getStartDateFromTimeRange(): ?\Carbon\Carbon
+    {
+        return match ($this->timeRange) {
+            '3m' => now()->subMonths(3),
+            '6m' => now()->subMonths(6),
+            '12m', '1y' => now()->subYear(),
+            '18m' => now()->subMonths(18),
+            '2y' => now()->subYears(2),
+            '3y' => now()->subYears(3),
+            '4y' => now()->subYears(4),
+            '5y' => now()->subYears(5),
+            '6y' => now()->subYears(6),
+            default => now()->subYears(3), // Default to 3 years
+        };
     }
 }

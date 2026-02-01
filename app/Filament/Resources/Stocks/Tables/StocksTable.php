@@ -114,6 +114,7 @@ class StocksTable
                     ->icon('heroicon-o-chart-bar')
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
+                    ->modalHeading(fn (Stock $record) => $record->name)
                     ->modalContent(fn (Stock $record) => view('filament.resources.stocks.stock-chart-modal', ['record' => $record])),
                 Action::make('sync_price')
                     ->label('Sync Price')

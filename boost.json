@@ -4,13 +4,14 @@
         "gemini",
         "opencode"
     ],
-    "editors": [
-        "claude_code",
-        "gemini",
-        "opencode",
-        "vscode"
-    ],
-    "guidelines": [
+    "guidelines": true,
+    "herd_mcp": false,
+    "mcp": true,
+    "packages": [
         "filament/filament"
+    ],
+    "sail": false,
+    "skills": [
+        "mcp-development"
     ]
 }

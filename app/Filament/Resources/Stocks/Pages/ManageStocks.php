@@ -30,6 +30,10 @@ class ManageStocks extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\Action::make('index_chart')
+                ->label('Index Chart')
+                ->icon('heroicon-o-chart-bar')
+                ->url(StockResource::getUrl('chart')),
             \Filament\Actions\Action::make('sync_realtime')
                 ->label('Sync')
                 ->icon('heroicon-o-arrow-path')
@@ -192,19 +196,5 @@ class ManageStocks extends ManageRecords
                     }
                 }),
         ];
-    }
-
-    protected function getFooterWidgets(): array
-    {
-        // Only show the chart when the 'index' tab is active
-        $activeTab = request()->query('tab');
-
-        if ($activeTab === 'index') {
-            return [
-                \App\Filament\Widgets\IndexStockPricesChart::class,
-            ];
-        }
-
-        return [];
     }
 }

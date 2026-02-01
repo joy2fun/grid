@@ -42,6 +42,7 @@ class StockResource extends Resource
     {
         return [
             'index' => ManageStocks::route('/'),
+            'chart' => \App\Filament\Pages\ViewIndexChart::route('/chart'),
             'backtest' => BacktestStock::route('/{record}/backtest'),
         ];
     }

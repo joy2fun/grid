@@ -11,11 +11,23 @@ class StockPriceChart extends ApexChartWidget
      */
     protected static ?string $chartId = 'stockPriceChart';
 
-    protected static ?string $heading = 'Stock Price History';
+    protected static ?string $heading = null;
 
     protected ?string $pollingInterval = null;
 
     public ?int $stockId = null;
+
+    public ?string $filter = '120';
+
+    protected function getFilters(): ?array
+    {
+        return [
+            '100' => '100 Days',
+            '200' => '200 Days',
+            '300' => '300 Days',
+            '600' => '600 Days',
+        ];
+    }
 
     protected function getOptions(): array
     {
@@ -23,10 +35,12 @@ class StockPriceChart extends ApexChartWidget
             return [];
         }
 
+        $limit = (int) $this->filter;
+
         $prices = \App\Models\DayPrice::query()
             ->where('stock_id', $this->stockId)
             ->orderBy('date', 'desc')
-            ->limit(120)
+            ->limit($limit)
             ->get()
             ->reverse() // Ensure chronological order for chart
             ->values();
@@ -82,6 +96,9 @@ class StockPriceChart extends ApexChartWidget
             'chart' => [
                 'type' => 'candlestick',
                 'height' => 350,
+                'animations' => [
+                    'enabled' => false,
+                ],
                 'toolbar' => [
                     'show' => true,
                 ],
