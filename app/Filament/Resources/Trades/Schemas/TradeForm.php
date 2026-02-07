@@ -14,23 +14,29 @@ class TradeForm
         return $schema
             ->components([
                 Select::make('grid_id')
-                    ->relationship('grid', 'name'),
+                    ->relationship('grid', 'name')
+                    ->label(__('app.trade.grid')),
                 Select::make('stock_id')
                     ->relationship('stock', 'name', modifyQueryUsing: fn ($query) => $query->where('type', '!=', 'index'))
+                    ->label(__('app.trade.stock'))
                     ->required(),
                 Select::make('side')
+                    ->label(__('app.trade.side'))
                     ->options([
-                        'buy' => 'Buy',
-                        'sell' => 'Sell',
+                        'buy' => __('app.trade.side_buy'),
+                        'sell' => __('app.trade.side_sell'),
                     ])
                     ->required(),
                 TextInput::make('price')
+                    ->label(__('app.trade.price'))
                     ->required()
                     ->prefix('¥'),
                 TextInput::make('quantity')
+                    ->label(__('app.trade.quantity'))
                     ->required()
                     ->numeric(),
                 DateTimePicker::make('executed_at')
+                    ->label(__('app.trade.executed_at'))
                     ->required(),
             ]);
     }

@@ -13,7 +13,10 @@ class GridTradesChart extends ApexChartWidget
      */
     protected static ?string $chartId = 'gridTradesChart';
 
-    protected static ?string $heading = 'Stock Price & Trades';
+    public function getHeading(): string
+    {
+        return __('app.widgets.stock_price_trades');
+    }
 
     protected ?string $pollingInterval = null;
 

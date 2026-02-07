@@ -16,7 +16,6 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
@@ -36,26 +35,26 @@ class ManageTrades extends ManageRecords
     {
         return [
             CreateAction::make()
-                ->label('New')
+                ->label(__('app.common.new'))
                 ->icon('heroicon-o-plus'),
             ActionGroup::make([
                 Action::make('bulkImport')
-                    ->label('Import')
+                    ->label(__('app.common.import'))
                     ->icon('heroicon-o-document-arrow-up')
-                    ->modalHeading('Bulk Import Trades')
+                    ->modalHeading(__('app.import_export.label'))
                     ->schema([
                         FileUpload::make('image')
-                            ->label('Upload Trade Image')
+                            ->label(__('app.import_export.upload_image'))
                             ->image()
                             ->disk('local')
                             ->directory('trade-imports')
                             ->maxSize(5120)
-                            ->helperText('Upload an image of your trade records to parse it automatically.')
+                            ->helperText(__('app.import_export.image_helper'))
                             ->live()
                             ->previewable(false)
                             ->hintAction(
                                 Action::make('parseImage')
-                                    ->label('Parse with DeepSeek')
+                                    ->label(__('app.import_export.parse_with_deepseek'))
                                     ->icon('heroicon-m-sparkles')
                                     ->action(function (Set $set, $state, DeepSeekService $deepSeekService, FileUpload $component) {
                                         if (! $state) {
@@ -130,9 +129,9 @@ class ManageTrades extends ManageRecords
                                     })
                             ),
                         TextInput::make('fallback_code')
-                            ->label('Fallback Stock Code')
-                            ->placeholder('e.g. 601166')
-                            ->helperText('This code will be used if the image parsing fails to extract a stock code.')
+                            ->label(__('app.import_export.fallback_code'))
+                            ->placeholder(__('app.import_export.fallback_placeholder'))
+                            ->helperText(__('app.import_export.fallback_helper'))
                             ->live(),
                         Grid::make(1)
                             ->schema(function ($get) {
@@ -141,7 +140,7 @@ class ManageTrades extends ManageRecords
                                     return [
                                         TextEntry::make('no_data')
                                             ->hiddenLabel()
-                                            ->default('No data to preview')
+                                            ->default(__('app.import_export.no_data'))
                                             ->size('text-sm'),
                                     ];
                                 }
@@ -151,21 +150,13 @@ class ManageTrades extends ManageRecords
                                     return [
                                         TextEntry::make('invalid_json')
                                             ->hiddenLabel()
-                                            ->default('Invalid JSON format')
+                                            ->default(__('app.import_export.invalid_json'))
                                             ->size('text-sm'),
                                     ];
                                 }
 
                                 return [
                                     RepeatableEntry::make('trades')
-                                        // ->table([
-                                        //     TableColumn::make('Code'),
-                                        //     TableColumn::make('Name'),
-                                        //     TableColumn::make('Side'),
-                                        //     TableColumn::make('Qty'),
-                                        //     TableColumn::make('Price'),
-                                        //     TableColumn::make('Time'),
-                                        // ])
                                         ->schema([
                                             TextEntry::make('code')
                                                 ->weight('medium')
@@ -189,7 +180,7 @@ class ManageTrades extends ManageRecords
                                         ->columns(['md' => 6, 'default' => 3]),
                                 ];
                             }),
-                        Section::make('Raw JSON Data')
+                        Section::make(__('app.import_export.raw_json'))
                             ->collapsible()
                             ->collapsed()
                             ->compact()
@@ -206,7 +197,7 @@ class ManageTrades extends ManageRecords
 
                         if (json_last_error() !== JSON_ERROR_NONE) {
                             Notification::make()
-                                ->title('Invalid JSON')
+                                ->title(__('app.notifications.invalid_json'))
                                 ->body('Please ensure your JSON is properly formatted.')
                                 ->danger()
                                 ->send();
@@ -216,7 +207,7 @@ class ManageTrades extends ManageRecords
 
                         if (! isset($jsonData['trades']) || ! is_array($jsonData['trades'])) {
                             Notification::make()
-                                ->title('Invalid Format')
+                                ->title(__('app.notifications.invalid_format'))
                                 ->body('JSON must contain a "trades" array.')
                                 ->danger()
                                 ->send();
@@ -289,7 +280,7 @@ class ManageTrades extends ManageRecords
                             }
 
                             Notification::make()
-                                ->title($importedCount > 0 ? 'Import Completed' : 'Import Failed')
+                                ->title($importedCount > 0 ? __('app.notifications.import_completed') : __('app.notifications.import_failed'))
                                 ->body($message)
                                 ->when(! empty($errors), fn ($notification) => $notification->danger())
                                 ->when(empty($errors) && $importedCount > 0, fn ($notification) => $notification->success())
@@ -298,21 +289,21 @@ class ManageTrades extends ManageRecords
                             DB::rollBack();
 
                             Notification::make()
-                                ->title('Import Failed')
+                                ->title(__('app.notifications.import_failed'))
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
                         }
                     }),
                 Action::make('bulkImportBackground')
-                    ->label('Bulk Import')
+                    ->label(__('app.import_export.bulk_import_bg'))
                     ->icon('heroicon-o-cloud-arrow-up')
                     ->color('info')
-                    ->modalHeading('Bulk Import Trades (Background)')
-                    ->modalDescription('Upload multiple images of your trade records. They will be processed in the background.')
+                    ->modalHeading(__('app.import_export.bulk_import_bg'))
+                    ->modalDescription(__('app.import_export.bulk_desc'))
                     ->schema([
                         FileUpload::make('images')
-                            ->label('Upload Trade Images')
+                            ->label(__('app.import_export.upload_images'))
                             ->image()
                             ->multiple()
                             ->previewable(false)
@@ -320,11 +311,11 @@ class ManageTrades extends ManageRecords
                             ->directory('trade-imports')
                             ->maxSize(5120)
                             ->required()
-                            ->helperText('Upload one or more images of your trade records.'),
+                            ->helperText(__('app.import_export.bulk_desc')),
                         TextInput::make('fallback_code')
-                            ->label('Fallback Stock Code')
-                            ->placeholder('e.g. 601166')
-                            ->helperText('This code will be used if the image parsing fails to extract a stock code for any of the images.'),
+                            ->label(__('app.import_export.fallback_code'))
+                            ->placeholder(__('app.import_export.fallback_placeholder'))
+                            ->helperText(__('app.import_export.fallback_helper')),
                     ])
                     ->action(function (array $data) {
                         $images = $data['images'];
@@ -335,13 +326,13 @@ class ManageTrades extends ManageRecords
                         }
 
                         Notification::make()
-                            ->title('Import Started')
+                            ->title(__('app.notifications.import_completed'))
                             ->body(count($images).' image(s) have been queued for processing.')
                             ->success()
                             ->send();
                     }),
                 Action::make('backup')
-                    ->label('Backup')
+                    ->label(__('app.common.backup'))
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->action(function () {
@@ -375,20 +366,20 @@ class ManageTrades extends ManageRecords
                         ]);
                     }),
                 Action::make('restore')
-                    ->label('Restore')
+                    ->label(__('app.common.restore'))
                     ->icon('heroicon-o-arrow-up-tray')
                     ->color('warning')
-                    ->modalHeading('Restore Trades from Backup')
+                    ->modalHeading(__('app.common.restore'))
                     ->modalDescription('Upload a JSON backup file to restore trades. Existing trades will be skipped.')
                     ->schema([
                         FileUpload::make('backup_file')
-                            ->label('Backup JSON File')
+                            ->label(__('app.import_export.backup_file'))
                             ->acceptedFileTypes(['application/json', 'text/plain', '.json'])
                             ->disk('local')
                             ->directory('trade-backups')
                             ->maxSize(10240)
                             ->required()
-                            ->helperText('Upload a trades backup JSON file.'),
+                            ->helperText(__('app.import_export.backup_helper')),
                     ])
                     ->action(function (array $data, StockService $stockService) {
                         $filePaths = $data['backup_file'];
@@ -402,7 +393,7 @@ class ManageTrades extends ManageRecords
 
                         if (! $filePath) {
                             Notification::make()
-                                ->title('No File Uploaded')
+                                ->title(__('app.notifications.no_file'))
                                 ->body('Please upload a backup file.')
                                 ->danger()
                                 ->send();
@@ -414,7 +405,7 @@ class ManageTrades extends ManageRecords
 
                         if (! file_exists($fullPath)) {
                             Notification::make()
-                                ->title('File Not Found')
+                                ->title(__('app.notifications.file_not_found'))
                                 ->body('The uploaded backup file could not be found.')
                                 ->danger()
                                 ->send();
@@ -427,7 +418,7 @@ class ManageTrades extends ManageRecords
 
                         if (json_last_error() !== JSON_ERROR_NONE) {
                             Notification::make()
-                                ->title('Invalid JSON')
+                                ->title(__('app.notifications.invalid_json'))
                                 ->body('The backup file contains invalid JSON: '.json_last_error_msg())
                                 ->danger()
                                 ->send();
@@ -437,7 +428,7 @@ class ManageTrades extends ManageRecords
 
                         if (! isset($backupData['trades']) || ! is_array($backupData['trades'])) {
                             Notification::make()
-                                ->title('Invalid Format')
+                                ->title(__('app.notifications.invalid_format'))
                                 ->body('The backup file must contain a "trades" array.')
                                 ->danger()
                                 ->send();
@@ -516,7 +507,7 @@ class ManageTrades extends ManageRecords
                             }
 
                             Notification::make()
-                                ->title($importedCount > 0 ? 'Restore Completed' : 'No Trades Restored')
+                                ->title($importedCount > 0 ? __('app.notifications.restore_completed') : __('app.notifications.import_failed'))
                                 ->body($message)
                                 ->when(! empty($errors), fn ($notification) => $notification->warning())
                                 ->when(empty($errors) && $importedCount > 0, fn ($notification) => $notification->success())
@@ -529,14 +520,14 @@ class ManageTrades extends ManageRecords
                             Storage::disk('local')->delete($filePath);
 
                             Notification::make()
-                                ->title('Restore Failed')
+                                ->title(__('app.notifications.restore_failed'))
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
                         }
                     }),
             ])
-                ->label('Import / Export')
+                ->label(__('app.import_export.label'))
                 ->icon('heroicon-o-arrow-path-rounded-square')
                 ->color('gray')
                 ->button(),

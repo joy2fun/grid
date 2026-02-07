@@ -11,7 +11,10 @@ use Filament\Widgets\TableWidget;
 
 class InactiveStocksTable extends TableWidget
 {
-    protected static ?string $heading = 'Inactive Stocks';
+    public function getHeading(): string
+    {
+        return __('app.widgets.inactive_stocks');
+    }
 
     protected static ?int $sort = 1;
 
@@ -35,7 +38,7 @@ class InactiveStocksTable extends TableWidget
             )
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('app.stock.name'))
                     ->url(fn ($record) => TradeResource::getUrl('index', [
                         'filters' => [
                             'stock_id' => [
@@ -44,14 +47,14 @@ class InactiveStocksTable extends TableWidget
                         ],
                     ])),
                 TextColumn::make('current_price')
-                    ->label('Current'),
+                    ->label(__('app.widgets.current')),
                 TextColumn::make('lastTradePrice')
-                    ->label('Last Trade')
+                    ->label(__('app.stock.last_trade'))
                     ->getStateUsing(function (Stock $record): ?float {
                         return $record->trades->first()?->price;
                     }),
                 TextColumn::make('priceChange')
-                    ->label('Change %')
+                    ->label(__('app.widgets.change_percentage'))
                     ->getStateUsing(function (Stock $record): ?float {
                         $lastTrade = $record->trades->first();
                         if (! $lastTrade || ! $record->current_price || $lastTrade->price === 0) {
@@ -69,7 +72,7 @@ class InactiveStocksTable extends TableWidget
                     })
                     ->sortable(),
                 TextColumn::make('daysInactive')
-                    ->label('Inactive Days')
+                    ->label(__('app.widgets.inactive_days'))
                     ->getStateUsing(function (Stock $record): int {
                         $lastTrade = $record->trades->first();
                         if (! $lastTrade) {
@@ -78,12 +81,12 @@ class InactiveStocksTable extends TableWidget
 
                         return $lastTrade->executed_at->diffInDays();
                     })
-                    ->suffix(' days')
+                    ->suffix(' '.__('app.widgets.days'))
                     ->sortable(),
             ])
             ->defaultSort('daysInactive', 'desc')
             ->paginated(false)
-            ->emptyStateHeading('No Inactive Stocks')
-            ->emptyStateDescription("All stocks have been traded within the last {$threshold} days.");
+            ->emptyStateHeading(__('app.widgets.no_inactive_stocks'))
+            ->emptyStateDescription(__('app.widgets.all_traded_recently', ['days' => $threshold]));
     }
 }

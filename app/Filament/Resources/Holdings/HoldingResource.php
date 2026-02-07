@@ -21,31 +21,47 @@ class HoldingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartBar;
 
+    public static function getNavigationLabel(): string
+    {
+        return __('app.nav.holdings');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.holding.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('app.nav.holdings');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 Select::make('stock_id')
                     ->relationship('stock', 'name')
+                    ->label(__('app.holding.stock'))
                     ->required(),
                 TextInput::make('initial_quantity')
-                    ->label('Initial Quantity')
+                    ->label(__('app.holding.initial_quantity'))
                     ->numeric()
                     ->required(),
                 TextInput::make('initial_cost')
-                    ->label('Initial Cost')
+                    ->label(__('app.holding.initial_cost'))
                     ->numeric()
                     ->required(),
                 TextInput::make('quantity')
-                    ->label('Current Quantity')
+                    ->label(__('app.holding.current_quantity'))
                     ->numeric()
                     ->disabled(),
                 TextInput::make('average_cost')
-                    ->label('Average Cost')
+                    ->label(__('app.holding.average_cost'))
                     ->numeric()
                     ->disabled(),
                 TextInput::make('total_cost')
-                    ->label('Total Cost')
+                    ->label(__('app.holding.total_cost'))
                     ->numeric()
                     ->disabled(),
             ]);
@@ -56,30 +72,30 @@ class HoldingResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('stock.name')
-                    ->label('Stock')
+                    ->label(__('app.holding.stock'))
                     ->description(fn (Holding $record): string => $record->stock->code)
                     ->sortable()
                     ->searchable(['name', 'code']),
                 TextColumn::make('quantity')
-                    ->label('Current Qty')
+                    ->label(__('app.holding.current_qty'))
                     ->numeric(0)
                     ->sortable(),
                 TextColumn::make('average_cost')
-                    ->label('Avg Cost')
+                    ->label(__('app.holding.avg_cost'))
                     ->numeric(3)
                     ->sortable(),
                 TextColumn::make('total_cost')
-                    ->label('Total Cost')
+                    ->label(__('app.holding.total_cost'))
                     ->numeric(0)
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('initial_quantity')
-                    ->label('Initial Qty')
+                    ->label(__('app.holding.initial_quantity'))
                     ->numeric(0)
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('initial_cost')
-                    ->label('Initial Cost')
+                    ->label(__('app.holding.initial_cost'))
                     ->numeric(3)
                     ->sortable()
                     ->toggleable(),

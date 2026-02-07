@@ -40,11 +40,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->userMenuItems([
                 'settings' => \Filament\Navigation\MenuItem::make()
-                    ->label('Settings')
+                    ->label(fn () => __('app.common.settings'))
                     ->url(fn (): string => AppSettings::getUrl())
                     ->icon('heroicon-o-cog-6-tooth'),
                 'mcp' => \Filament\Navigation\MenuItem::make()
-                    ->label('MCP Configuration')
+                    ->label(fn () => __('app.mcp_settings.title'))
                     ->url(fn (): string => McpSettings::getUrl())
                     ->icon('heroicon-o-server'),
             ])

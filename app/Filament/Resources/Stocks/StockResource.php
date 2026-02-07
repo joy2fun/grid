@@ -19,7 +19,20 @@ class StockResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
-    protected static ?string $navigationLabel = 'Stocks';
+    public static function getNavigationLabel(): string
+    {
+        return __('app.nav.stocks');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.stock.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('app.nav.stocks');
+    }
 
     public static function form(Schema $schema): Schema
     {

@@ -18,7 +18,20 @@ class PriceAlertResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBell;
 
-    protected static ?string $navigationLabel = 'Price Alerts';
+    public static function getNavigationLabel(): string
+    {
+        return __('app.nav.price_alerts');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.price_alert.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('app.nav.price_alerts');
+    }
 
     public static function form(Schema $schema): Schema
     {

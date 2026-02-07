@@ -1,0 +1,238 @@
+<?php
+
+return [
+    // Navigation
+    'nav' => [
+        'stocks' => 'Stocks',
+        'trades' => 'Trades',
+        'grids' => 'Grids',
+        'holdings' => 'Holdings',
+        'price_alerts' => 'Price Alerts',
+        'index_chart' => 'Index Chart',
+    ],
+
+    // Common
+    'common' => [
+        'all' => 'All',
+        'new' => 'New',
+        'create' => 'Create',
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+        'save' => 'Save',
+        'cancel' => 'Cancel',
+        'confirm' => 'Confirm',
+        'back' => 'Back',
+        'close' => 'Close',
+        'refresh' => 'Refresh',
+        'search' => 'Search',
+        'filter' => 'Filter',
+        'actions' => 'Actions',
+        'tools' => 'Tools',
+        'import' => 'Import',
+        'export' => 'Export',
+        'backup' => 'Backup',
+        'restore' => 'Restore',
+        'bulk_import' => 'Bulk Import',
+        'settings' => 'Settings',
+        'yes' => 'Yes',
+        'no' => 'No',
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+    ],
+
+    // Stock
+    'stock' => [
+        'label' => 'Stock',
+        'code' => 'Code',
+        'name' => 'Name',
+        'type' => 'Type',
+        'type_etf' => 'ETF',
+        'type_index' => 'Index',
+        'peak_value' => 'Peak Value',
+        'current_price' => 'Current Price',
+        'rise_percentage' => 'Rise %',
+        'last_trade' => 'Last Trade',
+        'xirr' => 'XIRR',
+    ],
+
+    // Trade
+    'trade' => [
+        'label' => 'Trade',
+        'stock' => 'Stock',
+        'grid' => 'Grid',
+        'side' => 'Side',
+        'side_buy' => 'Buy',
+        'side_sell' => 'Sell',
+        'price' => 'Price',
+        'quantity' => 'Quantity',
+        'executed_at' => 'Executed At',
+        'created_at' => 'Created At',
+        'updated_at' => 'Updated At',
+        'from' => 'From',
+        'until' => 'Until',
+    ],
+
+    // Grid
+    'grid' => [
+        'label' => 'Grid',
+        'stock' => 'Stock',
+        'name' => 'Name',
+        'initial_amount' => 'Initial Amount',
+        'grid_interval' => 'Grid Interval',
+        'xirr' => 'XIRR',
+        'total_profit' => 'Total Profit/Loss',
+        'max_cash_required' => 'Max Cash Required',
+        'status' => 'Status',
+        'trades_count' => 'Trades',
+        'final_shares' => 'Final Shares',
+        'cash' => 'Cash',
+        'holdings' => 'Holdings',
+        'peak_capital' => 'Peak capital needed',
+        'annual_return' => 'Annual Return',
+    ],
+
+    // Holding
+    'holding' => [
+        'label' => 'Holding',
+        'stock' => 'Stock',
+        'initial_quantity' => 'Initial Quantity',
+        'initial_cost' => 'Initial Cost',
+        'current_quantity' => 'Current Quantity',
+        'average_cost' => 'Average Cost',
+        'total_cost' => 'Total Cost',
+        'current_qty' => 'Current Qty',
+        'avg_cost' => 'Avg Cost',
+    ],
+
+    // Price Alert
+    'price_alert' => [
+        'label' => 'Price Alert',
+        'stock' => 'Stock',
+        'stock_name' => 'Stock Name',
+        'alert_type' => 'Alert Type',
+        'threshold_type_rise' => 'Price Rise (Alert when price >= threshold)',
+        'threshold_type_drop' => 'Price Drop (Alert when price <= threshold)',
+        'threshold' => 'Threshold',
+        'threshold_price' => 'Threshold Price',
+        'current_price' => 'Current Price',
+        'last_notified' => 'Last Notified',
+        'active' => 'Active',
+        'price_rise' => 'Price Rise',
+        'price_drop' => 'Price Drop',
+    ],
+
+    // App Settings
+    'app_settings' => [
+        'title' => 'Application Settings',
+        'description' => 'Configure application preferences',
+        'language' => 'Language',
+        'language_helper' => 'Select your preferred language',
+        'enable_notifications' => 'Enable Notifications',
+        'bark_url' => 'Bark Notification URL',
+        'bark_placeholder' => 'https://api.day.app/your-key/',
+        'bark_helper' => 'Enter your Bark push notification endpoint URL',
+        'test_notification' => 'Test Notification',
+        'inactive_threshold' => 'Inactive Stocks Threshold (days)',
+        'inactive_helper' => 'Number of days after which a stock is considered inactive if not traded',
+        'price_change_threshold' => 'Price Change Threshold (%)',
+        'price_change_helper' => 'Percentage price change (rise or drop) compared to last traded price to trigger notifications',
+        'api_settings' => 'API & OCR Settings',
+        'api_description' => 'Overwrite environment variables for external services',
+        'deepseek_key' => 'DeepSeek API Key',
+        'deepseek_helper' => 'Overwrites DEEPSEEK_API_KEY if provided',
+        'baidu_token' => 'Baidu OCR Token',
+        'baidu_helper' => 'Overwrites BAIDU_OCR_TOKEN if provided',
+    ],
+
+    // MCP Settings
+    'mcp_settings' => [
+        'title' => 'MCP Configuration',
+        'description' => 'Model Context Protocol (MCP) server configuration for integrating with Grid Trading',
+        'config' => 'MCP Server Configuration',
+        'config_helper' => 'Copy this configuration to your MCP client settings file (usually .mcp.json or similar)',
+        'generate_token' => 'Generate MCP Settings',
+    ],
+
+    // Widgets
+    'widgets' => [
+        'significant_price_changes' => 'Significant Price Changes',
+        'inactive_stocks' => 'Inactive Stocks',
+        'stock_price_trades' => 'Stock Price & Trades',
+        'monthly_cash_flow' => 'Monthly Cash Flow',
+        'no_significant_changes' => 'No Significant Price Changes',
+        'no_inactive_stocks' => 'No Inactive Stocks',
+        'all_traded_recently' => 'All stocks have been traded within the last :days days',
+        'current' => 'Current',
+        'change_percentage' => 'Change %',
+        'days_since' => 'Days Since',
+        'days' => 'days',
+        'inactive_days' => 'Inactive Days',
+    ],
+
+    // Index Chart
+    'index_chart' => [
+        'title' => 'Index Stock Price History',
+        'time_range' => [
+            '3m' => '3M',
+            '6m' => '6M',
+            '12m' => '12M',
+            '18m' => '18M',
+            '2y' => '2Y',
+            '3y' => '3Y',
+            '4y' => '4Y',
+            '5y' => '5Y',
+            '6y' => '6Y',
+        ],
+    ],
+
+    // Import/Export
+    'import_export' => [
+        'label' => 'Import / Export',
+        'upload_image' => 'Upload Trade Image',
+        'upload_images' => 'Upload Trade Images',
+        'image_helper' => 'Upload an image of your trade records to parse it automatically',
+        'parse_with_deepseek' => 'Parse with DeepSeek',
+        'fallback_code' => 'Fallback Stock Code',
+        'fallback_placeholder' => 'e.g. 601166',
+        'fallback_helper' => 'This code will be used if the image parsing fails to extract a stock code',
+        'bulk_import_bg' => 'Bulk Import (Background)',
+        'bulk_desc' => 'Upload one or more images of your trade records',
+        'stock_json' => 'Stock JSON',
+        'backup_file' => 'Backup JSON File',
+        'backup_helper' => 'Upload a trades backup JSON file',
+        'raw_json' => 'Raw JSON Data',
+        'preview' => 'Preview',
+        'no_data' => 'No data to preview',
+        'invalid_json' => 'Invalid JSON format',
+    ],
+
+    // Table Columns
+    'table' => [
+        'peak_percentage' => 'Peak %',
+    ],
+
+    // Notifications
+    'notifications' => [
+        'settings_saved' => 'Settings saved',
+        'import_completed' => 'Import Completed',
+        'import_failed' => 'Import Failed',
+        'restore_completed' => 'Restore Completed',
+        'restore_failed' => 'Restore Failed',
+        'price_synced' => 'Price Synced',
+        'test_sent' => 'Test notification sent',
+        'invalid_json' => 'Invalid JSON',
+        'invalid_format' => 'Invalid Format',
+        'token_generated' => 'Token Generated',
+        'no_file' => 'No File Uploaded',
+        'file_not_found' => 'File Not Found',
+    ],
+
+    // Actions
+    'actions' => [
+        'backtest' => 'Backtest',
+        'price_chart' => 'Price Chart',
+        'sync_price' => 'Sync Price',
+        'sync_prices' => 'Sync Prices',
+        'index_chart' => 'Index Chart',
+    ],
+];

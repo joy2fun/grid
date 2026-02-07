@@ -10,7 +10,10 @@ class MonthlyCashFlowChart extends ApexChartWidget
 {
     protected static ?string $chartId = 'monthlyCashFlowChart';
 
-    protected static ?string $heading = 'Monthly Cash Flow';
+    public function getHeading(): string
+    {
+        return __('app.widgets.monthly_cash_flow');
+    }
 
     protected ?string $pollingInterval = null;
 

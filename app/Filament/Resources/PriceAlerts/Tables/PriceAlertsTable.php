@@ -17,48 +17,48 @@ class PriceAlertsTable
             ->paginated(false)
             ->columns([
                 TextColumn::make('stock.name')
-                    ->label('Stock Name')
+                    ->label(__('app.price_alert.stock_name'))
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('threshold_type')
-                    ->label('Alert Type')
-                    ->formatStateUsing(fn ($state) => $state === 'rise' ? 'Price Rise' : 'Price Drop')
+                    ->label(__('app.price_alert.alert_type'))
+                    ->formatStateUsing(fn ($state) => $state === 'rise' ? __('app.price_alert.price_rise') : __('app.price_alert.price_drop'))
                     ->badge()
                     ->color(fn ($state) => $state === 'rise' ? 'success' : 'danger'),
 
                 TextColumn::make('threshold_value')
-                    ->label('Threshold')
+                    ->label(__('app.price_alert.threshold'))
                     ->sortable()
                     ->numeric(decimalPlaces: 2),
 
                 TextColumn::make('stock.current_price')
-                    ->label('Current Price')
+                    ->label(__('app.price_alert.current_price'))
                     ->numeric(decimalPlaces: 2)
                     ->default('-'),
 
                 TextColumn::make('last_notified_at')
-                    ->label('Last Notified')
+                    ->label(__('app.price_alert.last_notified'))
                     ->dateTime()
                     ->since(),
 
                 IconColumn::make('is_active')
-                    ->label('Active')
+                    ->label(__('app.price_alert.active'))
                     ->boolean(),
             ])
             ->modifyQueryUsing(fn ($query) => $query->with('stock'))
             ->filters([
                 SelectFilter::make('threshold_type')
-                    ->label('Alert Type')
+                    ->label(__('app.price_alert.alert_type'))
                     ->options([
-                        'rise' => 'Price Rise',
-                        'drop' => 'Price Drop',
+                        'rise' => __('app.price_alert.price_rise'),
+                        'drop' => __('app.price_alert.price_drop'),
                     ]),
                 SelectFilter::make('is_active')
-                    ->label('Active')
+                    ->label(__('app.price_alert.active'))
                     ->options([
-                        '1' => 'Active',
-                        '0' => 'Inactive',
+                        '1' => __('app.common.active'),
+                        '0' => __('app.common.inactive'),
                     ]),
             ])
             ->recordActions([

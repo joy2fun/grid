@@ -18,6 +18,21 @@ class TradeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    public static function getNavigationLabel(): string
+    {
+        return __('app.nav.trades');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.trade.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('app.nav.trades');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return TradeForm::configure($schema);

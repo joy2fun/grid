@@ -17,9 +17,15 @@ class ViewIndexChart extends Page
 
     protected string $view = 'filament.pages.view-index-chart';
 
-    protected static ?string $navigationLabel = 'Index Chart';
+    public static function getNavigationLabel(): string
+    {
+        return __('app.nav.index_chart');
+    }
 
-    protected static ?string $title = 'Index Stock Price Chart';
+    public function getTitle(): string
+    {
+        return __('app.index_chart.title');
+    }
 
     protected static ?int $navigationSort = 2;
 
@@ -30,7 +36,7 @@ class ViewIndexChart extends Page
     {
         return [
             Action::make('3m')
-                ->label('3M')
+                ->label(__('app.index_chart.time_range.3m'))
                 ->color(fn () => $this->timeRange === '3m' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '3m';
@@ -38,7 +44,7 @@ class ViewIndexChart extends Page
                 }),
 
             Action::make('6m')
-                ->label('6M')
+                ->label(__('app.index_chart.time_range.6m'))
                 ->color(fn () => $this->timeRange === '6m' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '6m';
@@ -46,7 +52,7 @@ class ViewIndexChart extends Page
                 }),
 
             Action::make('12m')
-                ->label('12M')
+                ->label(__('app.index_chart.time_range.12m'))
                 ->color(fn () => $this->timeRange === '12m' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '12m';
@@ -54,7 +60,7 @@ class ViewIndexChart extends Page
                 }),
 
             Action::make('18m')
-                ->label('18M')
+                ->label(__('app.index_chart.time_range.18m'))
                 ->color(fn () => $this->timeRange === '18m' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '18m';
@@ -62,7 +68,7 @@ class ViewIndexChart extends Page
                 }),
 
             Action::make('2y')
-                ->label('2Y')
+                ->label(__('app.index_chart.time_range.2y'))
                 ->color(fn () => $this->timeRange === '2y' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '2y';
@@ -70,7 +76,7 @@ class ViewIndexChart extends Page
                 }),
 
             Action::make('3y')
-                ->label('3Y')
+                ->label(__('app.index_chart.time_range.3y'))
                 ->color(fn () => $this->timeRange === '3y' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '3y';
@@ -78,7 +84,7 @@ class ViewIndexChart extends Page
                 }),
 
             Action::make('4y')
-                ->label('4Y')
+                ->label(__('app.index_chart.time_range.4y'))
                 ->color(fn () => $this->timeRange === '4y' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '4y';
@@ -86,7 +92,7 @@ class ViewIndexChart extends Page
                 }),
 
             Action::make('5y')
-                ->label('5Y')
+                ->label(__('app.index_chart.time_range.5y'))
                 ->color(fn () => $this->timeRange === '5y' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '5y';
@@ -94,7 +100,7 @@ class ViewIndexChart extends Page
                 }),
 
             Action::make('6y')
-                ->label('6Y')
+                ->label(__('app.index_chart.time_range.6y'))
                 ->color(fn () => $this->timeRange === '6y' ? 'primary' : 'gray')
                 ->action(function () {
                     $this->timeRange = '6y';

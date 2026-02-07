@@ -28,21 +28,21 @@ class GridStatsWidget extends StatsOverviewWidget
         $profitColor = $profit >= 0 ? 'success' : 'danger';
 
         return [
-            Stat::make('XIRR (Annual Return)', $metrics['xirr'] !== null ? number_format($xirr * 100, 3).'%' : 'N/A')
+            Stat::make(__('app.grid.annual_return'), $metrics['xirr'] !== null ? number_format($xirr * 100, 3).'%' : 'N/A')
                 ->color($xirrColor)
-                ->description('Annualized return rate')
+                ->description(__('app.grid.xirr'))
                 ->icon($xirr >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down'),
 
-            Stat::make('Total Profit/Loss', '¥'.number_format($profit, 0))
+            Stat::make(__('app.grid.total_profit'), '¥'.number_format($profit, 0))
                 ->color($profitColor)
-                ->description('Cash: ¥'.number_format($metrics['net_cash'], 0).' | Holdings: ¥'.number_format($metrics['holding_value'], 0)),
+                ->description(__('app.grid.cash').': ¥'.number_format($metrics['net_cash'], 0).' | '.__('app.grid.holdings').': ¥'.number_format($metrics['holding_value'], 0)),
 
-            Stat::make('Max Cash Required', '¥'.number_format($metrics['max_cash_occupied'], 0))
+            Stat::make(__('app.grid.max_cash_required'), '¥'.number_format($metrics['max_cash_occupied'], 0))
                 ->color('danger')
-                ->description('Peak capital needed'),
+                ->description(__('app.grid.peak_capital')),
 
-            Stat::make('Status', $metrics['trades_count'].' Trades')
-                ->description('Final Shares: '.number_format($metrics['final_shares'])),
+            Stat::make(__('app.grid.status'), $metrics['trades_count'].' '.__('app.trade.label'))
+                ->description(__('app.grid.final_shares').': '.number_format($metrics['final_shares'])),
         ];
     }
 }

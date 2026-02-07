@@ -21,10 +21,10 @@ class ManageStocks extends ManageRecords
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make('All'),
-            'etf' => Tab::make('ETF')
+            'all' => Tab::make(__('app.common.all')),
+            'etf' => Tab::make(__('app.stock.type_etf'))
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 'etf')),
-            'index' => Tab::make('Index')
+            'index' => Tab::make(__('app.stock.type_index'))
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 'index')),
         ];
     }
@@ -33,12 +33,12 @@ class ManageStocks extends ManageRecords
     {
         return [
             Action::make('index_chart')
-                ->label('Index Chart')
+                ->label(__('app.actions.index_chart'))
                 ->icon('heroicon-o-chart-bar')
                 ->url(StockResource::getUrl('chart')),
             ActionGroup::make([
                 Action::make('sync_realtime')
-                    ->label('Sync Prices')
+                    ->label(__('app.actions.sync_prices'))
                     ->icon('heroicon-o-arrow-path')
                     ->color('info')
                     ->action(function () {
@@ -60,19 +60,19 @@ class ManageStocks extends ManageRecords
                         }
 
                         Notification::make()
-                            ->title('Realtime Prices Synced')
+                            ->title(__('app.notifications.price_synced'))
                             ->body("Successfully triggered sync for {$processedCount} stocks.")
                             ->success()
                             ->send();
                     }),
                 Action::make('bulkImport')
-                    ->label('Import')
+                    ->label(__('app.common.import'))
                     ->icon('heroicon-o-document-arrow-up')
-                    ->modalHeading('Bulk Import Stocks')
+                    ->modalHeading(__('app.import_export.label'))
                     ->modalDescription('Paste JSON data to import stocks in bulk')
                     ->form([
                         Textarea::make('json_data')
-                            ->label('Stock JSON')
+                            ->label(__('app.import_export.stock_json'))
                             ->rows(12)
                             ->required()
                             ->hint('Example JSON format:')
@@ -94,7 +94,7 @@ class ManageStocks extends ManageRecords
 
                         if (json_last_error() !== JSON_ERROR_NONE) {
                             Notification::make()
-                                ->title('Invalid JSON')
+                                ->title(__('app.notifications.invalid_json'))
                                 ->body('Please ensure your JSON is properly formatted.')
                                 ->danger()
                                 ->send();
@@ -104,7 +104,7 @@ class ManageStocks extends ManageRecords
 
                         if (! isset($jsonData['stocks']) || ! is_array($jsonData['stocks'])) {
                             Notification::make()
-                                ->title('Invalid Format')
+                                ->title(__('app.notifications.invalid_format'))
                                 ->body('JSON must contain a "stocks" array.')
                                 ->danger()
                                 ->send();
@@ -183,7 +183,7 @@ class ManageStocks extends ManageRecords
                             }
 
                             Notification::make()
-                                ->title($importedCount > 0 || $updatedCount > 0 ? 'Import Completed' : 'Import Failed')
+                                ->title($importedCount > 0 || $updatedCount > 0 ? __('app.notifications.import_completed') : __('app.notifications.import_failed'))
                                 ->body($message)
                                 ->when(! empty($errors), fn ($notification) => $notification->danger())
                                 ->when(empty($errors) && ($importedCount > 0 || $updatedCount > 0), fn ($notification) => $notification->success())
@@ -192,19 +192,19 @@ class ManageStocks extends ManageRecords
                             \Illuminate\Support\Facades\DB::rollBack();
 
                             Notification::make()
-                                ->title('Import Failed')
+                                ->title(__('app.notifications.import_failed'))
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
                         }
                     }),
             ])
-                ->label('Tools')
+                ->label(__('app.common.tools'))
                 ->icon('heroicon-o-wrench')
                 ->color('gray')
                 ->button(),
             CreateAction::make()
-                ->label('New')
+                ->label(__('app.common.new'))
                 ->icon('heroicon-o-plus'),
         ];
     }

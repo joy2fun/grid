@@ -31,14 +31,14 @@ class McpSettings extends Page implements HasForms
     {
         return $schema
             ->schema([
-                Section::make('MCP Configuration')
-                    ->description('Model Context Protocol (MCP) server configuration for integrating with Grid Trading')
+                Section::make(__('app.mcp_settings.title'))
+                    ->description(__('app.mcp_settings.description'))
                     ->schema([
                         Textarea::make('mcpConfig')
-                            ->label('MCP Server Configuration')
+                            ->label(__('app.mcp_settings.config'))
                             ->rows(12)
                             ->disabled()
-                            ->helperText('Copy this configuration to your MCP client settings file (usually .mcp.json or similar)'),
+                            ->helperText(__('app.mcp_settings.config_helper')),
                     ])
                     ->columns(1),
             ])
@@ -59,7 +59,7 @@ class McpSettings extends Page implements HasForms
         $this->form->fill($this->data);
 
         Notification::make()
-            ->title('Token Generated')
+            ->title(__('app.notifications.token_generated'))
             ->body('New MCP token has been generated successfully!')
             ->success()
             ->send();
@@ -90,7 +90,7 @@ class McpSettings extends Page implements HasForms
     {
         return [
             Action::make('generateToken')
-                ->label('Generate mcp settings')
+                ->label(__('app.mcp_settings.generate_token'))
                 ->icon('heroicon-o-key')
                 ->action(function () {
                     $this->generateToken();

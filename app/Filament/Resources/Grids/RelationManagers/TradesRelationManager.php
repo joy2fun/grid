@@ -27,18 +27,22 @@ class TradesRelationManager extends RelationManager
                 Hidden::make('stock_id')
                     ->default(fn (RelationManager $livewire): int => $livewire->getOwnerRecord()->stock_id),
                 Select::make('side')
+                    ->label(__('app.trade.side'))
                     ->options([
-                        'buy' => 'Buy',
-                        'sell' => 'Sell',
+                        'buy' => __('app.trade.side_buy'),
+                        'sell' => __('app.trade.side_sell'),
                     ])
                     ->required(),
                 TextInput::make('price')
+                    ->label(__('app.trade.price'))
                     ->required()
                     ->prefix('¥'),
                 TextInput::make('quantity')
+                    ->label(__('app.trade.quantity'))
                     ->required()
                     ->numeric(),
                 DateTimePicker::make('executed_at')
+                    ->label(__('app.trade.executed_at'))
                     ->required()
                     ->default(now()),
             ]);
@@ -51,19 +55,24 @@ class TradesRelationManager extends RelationManager
             ->paginated(false)
             ->columns([
                 TextColumn::make('side')
+                    ->label(__('app.trade.side'))
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => $state === 'buy' ? __('app.trade.side_buy') : __('app.trade.side_sell'))
                     ->color(fn (string $state): string => match ($state) {
                         'buy' => 'success',
                         'sell' => 'danger',
                     })
                     ->searchable(),
                 TextColumn::make('price')
+                    ->label(__('app.trade.price'))
                     ->numeric(3)
                     ->sortable(),
                 TextColumn::make('quantity')
+                    ->label(__('app.trade.quantity'))
                     ->numeric(0)
                     ->sortable(),
                 TextColumn::make('executed_at')
+                    ->label(__('app.trade.executed_at'))
                     ->dateTime()
                     ->sortable(),
             ])

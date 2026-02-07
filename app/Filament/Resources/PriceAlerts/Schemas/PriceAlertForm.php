@@ -14,7 +14,7 @@ class PriceAlertForm
         return $schema
             ->components([
                 Select::make('stock_id')
-                    ->label('Stock')
+                    ->label(__('app.price_alert.stock'))
                     ->relationship('stock', 'name')
                     ->searchable()
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} ({$record->code})")
@@ -22,22 +22,22 @@ class PriceAlertForm
                     ->preload(),
 
                 Select::make('threshold_type')
-                    ->label('Alert Type')
+                    ->label(__('app.price_alert.alert_type'))
                     ->options([
-                        'rise' => 'Price Rise (Alert when price >= threshold)',
-                        'drop' => 'Price Drop (Alert when price <= threshold)',
+                        'rise' => __('app.price_alert.threshold_type_rise'),
+                        'drop' => __('app.price_alert.threshold_type_drop'),
                     ])
                     ->required(),
 
                 TextInput::make('threshold_value')
-                    ->label('Threshold Price')
+                    ->label(__('app.price_alert.threshold_price'))
                     ->numeric()
                     ->step(0.01)
                     ->required()
-                    ->helperText('Enter the price threshold that will trigger the alert.'),
+                    ->helperText(__('app.price_alert.threshold_helper')),
 
                 Toggle::make('is_active')
-                    ->label('Active')
+                    ->label(__('app.price_alert.active'))
                     ->default(true),
             ]);
     }

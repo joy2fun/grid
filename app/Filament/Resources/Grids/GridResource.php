@@ -20,6 +20,21 @@ class GridResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    public static function getNavigationLabel(): string
+    {
+        return __('app.nav.grids');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.grid.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('app.nav.grids');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return GridForm::configure($schema);

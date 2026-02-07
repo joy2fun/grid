@@ -13,26 +13,26 @@ class StockForm
         return $schema
             ->components([
                 TextInput::make('code')
-                    ->label('Code')
+                    ->label(__('app.stock.code'))
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('name')
-                    ->label('Name')
+                    ->label(__('app.stock.name'))
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('peak_value')
-                    ->label('Peak Value')
+                    ->label(__('app.stock.peak_value'))
                     ->numeric()
                     ->step(0.0001),
 
                 Select::make('type')
-                    ->label('Type')
+                    ->label(__('app.stock.type'))
                     ->required()
                     ->options([
-                        'etf' => 'ETF',
-                        'index' => 'Index',
+                        'etf' => __('app.stock.type_etf'),
+                        'index' => __('app.stock.type_index'),
                     ]),
             ]);
     }

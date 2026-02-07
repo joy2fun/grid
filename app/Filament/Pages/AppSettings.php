@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\AppSetting;
 use App\Services\BarkService;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -38,6 +39,7 @@ class AppSettings extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
+            'locale' => AppSetting::get('locale', config('app.locale', 'en')),
             'notifications_enabled' => AppSetting::get('notifications_enabled', true),
             'bark_url' => AppSetting::get('bark_url'),
             'inactive_stocks_threshold' => AppSetting::get('inactive_stocks_threshold', 30),
@@ -51,54 +53,66 @@ class AppSettings extends Page implements HasForms
     {
         return $schema
             ->schema([
-                Section::make('Application Settings')
-                    ->description('Configure application preferences')
+                Section::make(__('app.app_settings.title'))
+                    ->description(__('app.app_settings.description'))
                     ->schema([
+                        Select::make('locale')
+                            ->label(__('app.app_settings.language'))
+                            ->options([
+                                'en' => 'English',
+                                'zh_CN' => '简体中文',
+                            ])
+                            ->default(config('app.locale', 'en'))
+                            ->selectablePlaceholder(false)
+                            ->live()
+                            ->afterStateUpdated(function ($state) {
+                                app()->setLocale($state);
+                            }),
                         Toggle::make('notifications_enabled')
-                            ->label('Enable Notifications')
+                            ->label(__('app.app_settings.enable_notifications'))
                             ->default(true),
                         TextInput::make('bark_url')
-                            ->label('Bark Notification URL')
-                            ->placeholder('https://api.day.app/your-key/')
+                            ->label(__('app.app_settings.bark_url'))
+                            ->placeholder(__('app.app_settings.bark_placeholder'))
                             ->url()
-                            ->helperText('Enter your Bark push notification endpoint URL')
+                            ->helperText(__('app.app_settings.bark_helper'))
                             ->afterContent(
                                 Action::make('test_bark_notification')
-                                    ->label('Test Notification')
+                                    ->label(__('app.app_settings.test_notification'))
                                     ->action(function () {
                                         $this->testBarkNotification();
                                     })
                             ),
                         TextInput::make('inactive_stocks_threshold')
-                            ->label('Inactive Stocks Threshold (days)')
+                            ->label(__('app.app_settings.inactive_threshold'))
                             ->placeholder('30')
                             ->numeric()
                             ->minValue(1)
                             ->default(30)
-                            ->helperText('Number of days after which a stock is considered inactive if not traded'),
+                            ->helperText(__('app.app_settings.inactive_helper')),
                         TextInput::make('price_change_threshold')
-                            ->label('Price Change Threshold (%)')
+                            ->label(__('app.app_settings.price_change_threshold'))
                             ->placeholder('5')
                             ->numeric()
                             ->minValue(0.1)
                             ->maxValue(100)
                             ->step(0.1)
                             ->default(5)
-                            ->helperText('Percentage price change (rise or drop) compared to last traded price to trigger notifications'),
+                            ->helperText(__('app.app_settings.price_change_helper')),
                     ])
                     ->columns(1),
 
-                Section::make('API & OCR Settings')
-                    ->description('Overwrite environment variables for external services')
+                Section::make(__('app.app_settings.api_settings'))
+                    ->description(__('app.app_settings.api_description'))
                     ->schema([
                         TextInput::make('deepseek_api_key')
-                            ->label('DeepSeek API Key')
+                            ->label(__('app.app_settings.deepseek_key'))
                             ->password()
-                            ->helperText('Overwrites DEEPSEEK_API_KEY if provided'),
+                            ->helperText(__('app.app_settings.deepseek_helper')),
                         TextInput::make('baidu_ocr_token')
-                            ->label('Baidu OCR Token')
+                            ->label(__('app.app_settings.baidu_token'))
                             ->password()
-                            ->helperText('Overwrites BAIDU_OCR_TOKEN if provided'),
+                            ->helperText(__('app.app_settings.baidu_helper')),
                     ])
                     ->collapsible()
                     ->collapsed()
@@ -113,7 +127,7 @@ class AppSettings extends Page implements HasForms
 
         if (empty($barkUrl)) {
             Notification::make()
-                ->title('Error')
+                ->title(__('app.notifications.import_failed'))
                 ->body('Please enter a Bark URL first')
                 ->danger()
                 ->send();
@@ -122,20 +136,20 @@ class AppSettings extends Page implements HasForms
         }
 
         $success = $this->barkService()->send(
-            'Test Notification',
+            __('app.app_settings.test_notification'),
             'This is a test notification from Grid application',
             $barkUrl
         );
 
         if ($success) {
             Notification::make()
-                ->title('Success')
+                ->title(__('app.notifications.test_sent'))
                 ->body('Test notification sent successfully!')
                 ->success()
                 ->send();
         } else {
             Notification::make()
-                ->title('Error')
+                ->title(__('app.notifications.import_failed'))
                 ->body('Failed to send test notification. Please check your Bark URL.')
                 ->danger()
                 ->send();
@@ -147,6 +161,7 @@ class AppSettings extends Page implements HasForms
         $data = $this->form->getState();
 
         // Save app settings
+        AppSetting::set('locale', $data['locale'] ?? config('app.locale', 'en'));
         AppSetting::set('notifications_enabled', $data['notifications_enabled'] ?? false);
         AppSetting::set('bark_url', $data['bark_url'] ?? null);
         AppSetting::set('inactive_stocks_threshold', (int) ($data['inactive_stocks_threshold'] ?? 30));
@@ -154,9 +169,15 @@ class AppSettings extends Page implements HasForms
         AppSetting::set('deepseek_api_key', $data['deepseek_api_key'] ?? null);
         AppSetting::set('baidu_ocr_token', $data['baidu_ocr_token'] ?? null);
 
+        // Apply the locale immediately
+        app()->setLocale($data['locale'] ?? config('app.locale', 'en'));
+
         Notification::make()
-            ->title('Settings saved')
+            ->title(__('app.notifications.settings_saved'))
             ->success()
             ->send();
+
+        // Redirect to refresh the page with new locale
+        $this->redirect(AppSettings::getUrl());
     }
 }

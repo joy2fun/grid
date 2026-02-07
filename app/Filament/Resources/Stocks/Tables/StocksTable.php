@@ -23,26 +23,26 @@ class StocksTable
             })
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('app.stock.name'))
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('rise_percentage')
-                    ->label('Rise %')
+                    ->label(__('app.stock.rise_percentage'))
                     ->badge()
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
                     ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : '-')
                     ->sortable(),
 
                 TextColumn::make('current_price')
-                    ->label('Current Price')
+                    ->label(__('app.stock.current_price'))
                     ->numeric(decimalPlaces: 3)
                     ->sortable()
                     ->toggleable()
                     ->default('-'),
 
                 TextColumn::make('peak_percentage')
-                    ->label('Peak %')
+                    ->label(__('app.table.peak_percentage'))
                     ->getStateUsing(function (Stock $record) {
                         if (! $record->current_price || ! $record->peak_value || $record->peak_value <= 0) {
                             return null;
@@ -56,7 +56,7 @@ class StocksTable
                     ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state),
 
                 TextColumn::make('xirr')
-                    ->label('XIRR')
+                    ->label(__('app.stock.xirr'))
                     ->getStateUsing(fn (Stock $record) => ($record->xirr !== null) ? $record->xirr * 100 : null)
                     ->badge()
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
@@ -64,7 +64,7 @@ class StocksTable
                     ->default('-'),
 
                 TextColumn::make('last_trade_at')
-                    ->label('Last Trade')
+                    ->label(__('app.stock.last_trade'))
                     ->url(
                         fn (Stock $record): ?string => $record->type === 'etf'
                             ? TradeResource::getUrl('index', [
@@ -78,14 +78,14 @@ class StocksTable
                     ),
 
                 TextColumn::make('code')
-                    ->label('Code')
+                    ->label(__('app.stock.code'))
                     ->searchable()
                     ->sortable()
                     ->toggleable()
                     ->copyable(),
 
                 TextColumn::make('peak_value')
-                    ->label('Peak Value')
+                    ->label(__('app.stock.peak_value'))
                     ->sortable()
                     ->numeric(decimalPlaces: 4)
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -97,40 +97,40 @@ class StocksTable
             ]))
             ->filters([
                 SelectFilter::make('type')
-                    ->label('Type')
+                    ->label(__('app.stock.type'))
                     ->options([
-                        'etf' => 'ETF',
-                        'index' => 'Index',
+                        'etf' => __('app.stock.type_etf'),
+                        'index' => __('app.stock.type_index'),
                     ]),
             ])
             ->recordActions([
                 EditAction::make()->iconButton()->iconSize('sm'),
                 Action::make('backtest')
-                    ->label('Backtest')
+                    ->label(__('app.actions.backtest'))
                     ->icon('heroicon-o-presentation-chart-line')
                     ->url(fn (Stock $record) => BacktestStock::getUrl(['record' => $record])),
                 Action::make('chart')
-                    ->label('Price Chart')
+                    ->label(__('app.actions.price_chart'))
                     ->icon('heroicon-o-chart-bar')
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
                     ->modalHeading(fn (Stock $record) => $record->name)
                     ->modalContent(fn (Stock $record) => view('filament.resources.stocks.stock-chart-modal', ['record' => $record])),
                 Action::make('sync_price')
-                    ->label('Sync Price')
+                    ->label(__('app.actions.sync_price'))
                     ->icon('heroicon-o-arrow-path')
                     ->action(function (Stock $record, \App\Services\StockService $stockService) {
                         $result = $stockService->syncPriceByStockCode($record->code);
 
                         if ($result['success']) {
                             \Filament\Notifications\Notification::make()
-                                ->title('Price Synced')
+                                ->title(__('app.notifications.price_synced'))
                                 ->body("Successfully synced {$result['processed_count']} records.")
                                 ->success()
                                 ->send();
                         } else {
                             \Filament\Notifications\Notification::make()
-                                ->title('Sync Failed')
+                                ->title(__('app.notifications.import_failed'))
                                 ->body('Failed to sync stock prices.')
                                 ->danger()
                                 ->send();

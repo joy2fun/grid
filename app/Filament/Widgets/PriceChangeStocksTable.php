@@ -11,7 +11,10 @@ use Filament\Widgets\TableWidget;
 
 class PriceChangeStocksTable extends TableWidget
 {
-    protected static ?string $heading = 'Significant Price Changes';
+    public function getHeading(): string
+    {
+        return __('app.widgets.significant_price_changes');
+    }
 
     protected static ?int $sort = 2;
 
@@ -83,7 +86,7 @@ class PriceChangeStocksTable extends TableWidget
             ->query($query)
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('app.stock.name'))
                     ->url(fn ($record) => TradeResource::getUrl('index', [
                         'filters' => [
                             'stock_id' => [
@@ -92,14 +95,14 @@ class PriceChangeStocksTable extends TableWidget
                         ],
                     ])),
                 TextColumn::make('current_price')
-                    ->label('Current'),
+                    ->label(__('app.widgets.current')),
                 TextColumn::make('lastTradePrice')
-                    ->label('Last Trade')
+                    ->label(__('app.stock.last_trade'))
                     ->getStateUsing(function (Stock $record): ?float {
                         return $record->trades->first()?->price;
                     }),
                 TextColumn::make('priceChange')
-                    ->label('Change %')
+                    ->label(__('app.widgets.change_percentage'))
                     ->getStateUsing(function (Stock $record): ?float {
                         $lastTrade = $record->trades->first();
                         if (! $lastTrade || ! $record->current_price || $lastTrade->price === 0) {
@@ -117,7 +120,7 @@ class PriceChangeStocksTable extends TableWidget
                     })
                     ->weight('bold'),  // Removed sortable() as it requires complex SQL
                 TextColumn::make('daysSinceTrade')
-                    ->label('Days Since')
+                    ->label(__('app.widgets.days_since'))
                     ->getStateUsing(function (Stock $record): int {
                         $lastTrade = $record->trades->first();
                         if (! $lastTrade) {
@@ -126,11 +129,11 @@ class PriceChangeStocksTable extends TableWidget
 
                         return $lastTrade->executed_at->diffInDays();
                     })
-                    ->suffix(' days')
+                    ->suffix(' '.__('app.widgets.days'))
                     ->sortable(),
             ])
             ->paginated(false)
-            ->emptyStateHeading('No Significant Price Changes');
+            ->emptyStateHeading(__('app.widgets.no_significant_changes'));
         // Removed defaultSort as query is pre-sorted
     }
 }

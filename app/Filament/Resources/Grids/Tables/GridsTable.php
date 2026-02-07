@@ -13,14 +13,17 @@ class GridsTable
         return $table
             ->columns([
                 TextColumn::make('stock.name')
-                    ->label('Stock')
+                    ->label(__('app.grid.stock'))
                     ->sortable(),
                 TextColumn::make('name')
+                    ->label(__('app.grid.name'))
                     ->searchable(),
                 TextColumn::make('initial_amount')
+                    ->label(__('app.grid.initial_amount'))
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('grid_interval')
+                    ->label(__('app.grid.grid_interval'))
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')

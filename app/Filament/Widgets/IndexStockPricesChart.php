@@ -13,7 +13,10 @@ class IndexStockPricesChart extends ApexChartWidget
      */
     protected static ?string $chartId = 'indexStockPricesChart';
 
-    protected static ?string $heading = 'Index Stock Price History';
+    public function getHeading(): string
+    {
+        return __('app.index_chart.title');
+    }
 
     protected ?string $pollingInterval = null;
 
