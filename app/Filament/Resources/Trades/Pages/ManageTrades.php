@@ -335,6 +335,201 @@ class ManageTrades extends ManageRecords
                         ->success()
                         ->send();
                 }),
+            Action::make('backup')
+                ->label('Backup')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action(function () {
+                    $trades = Trade::with('stock')->get();
+
+                    $backupData = [
+                        'export_date' => now()->toIso8601String(),
+                        'total_trades' => $trades->count(),
+                        'trades' => $trades->map(function (Trade $trade) {
+                            return [
+                                'id' => $trade->id,
+                                'stock_code' => $trade->stock->code,
+                                'stock_name' => $trade->stock->name,
+                                'side' => $trade->side,
+                                'quantity' => $trade->quantity,
+                                'price' => $trade->price,
+                                'executed_at' => $trade->executed_at->toIso8601String(),
+                                'created_at' => $trade->created_at->toIso8601String(),
+                                'updated_at' => $trade->updated_at->toIso8601String(),
+                            ];
+                        })->toArray(),
+                    ];
+
+                    $jsonContent = json_encode($backupData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                    $filename = 'trades-backup-'.now()->format('Y-m-d-His').'.json';
+
+                    return response()->streamDownload(function () use ($jsonContent) {
+                        echo $jsonContent;
+                    }, $filename, [
+                        'Content-Type' => 'application/json',
+                    ]);
+                }),
+            Action::make('restore')
+                ->label('Restore')
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('warning')
+                ->modalHeading('Restore Trades from Backup')
+                ->modalDescription('Upload a JSON backup file to restore trades. Existing trades will be skipped.')
+                ->schema([
+                    FileUpload::make('backup_file')
+                        ->label('Backup JSON File')
+                        ->acceptedFileTypes(['application/json', 'text/plain', '.json'])
+                        ->disk('local')
+                        ->directory('trade-backups')
+                        ->maxSize(10240)
+                        ->required()
+                        ->helperText('Upload a trades backup JSON file.'),
+                ])
+                ->action(function (array $data, StockService $stockService) {
+                    $filePaths = $data['backup_file'];
+
+                    // FileUpload returns an array, get the first file
+                    if (is_array($filePaths)) {
+                        $filePath = $filePaths[0] ?? null;
+                    } else {
+                        $filePath = $filePaths;
+                    }
+
+                    if (! $filePath) {
+                        Notification::make()
+                            ->title('No File Uploaded')
+                            ->body('Please upload a backup file.')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $fullPath = Storage::disk('local')->path($filePath);
+
+                    if (! file_exists($fullPath)) {
+                        Notification::make()
+                            ->title('File Not Found')
+                            ->body('The uploaded backup file could not be found.')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $jsonContent = file_get_contents($fullPath);
+                    $backupData = json_decode($jsonContent, true);
+
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        Notification::make()
+                            ->title('Invalid JSON')
+                            ->body('The backup file contains invalid JSON: '.json_last_error_msg())
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    if (! isset($backupData['trades']) || ! is_array($backupData['trades'])) {
+                        Notification::make()
+                            ->title('Invalid Format')
+                            ->body('The backup file must contain a "trades" array.')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $importedCount = 0;
+                    $skippedCount = 0;
+                    $errors = [];
+
+                    DB::beginTransaction();
+
+                    try {
+                        foreach ($backupData['trades'] as $index => $tradeData) {
+                            $code = $tradeData['stock_code'] ?? null;
+
+                            // Validate required fields
+                            if (
+                                ! $code || ! isset($tradeData['quantity']) ||
+                                ! isset($tradeData['price']) || ! isset($tradeData['executed_at']) || ! isset($tradeData['side'])
+                            ) {
+                                $errors[] = 'Trade #'.($index + 1).': Missing required fields (stock_code, quantity, price, executed_at, side)';
+
+                                continue;
+                            }
+
+                            // Auto prefix stock code
+                            $prefixedCode = $stockService->autoPrefixCode($code);
+
+                            // Find or create stock by prefixed code
+                            $stock = Stock::firstOrCreate(
+                                ['code' => $prefixedCode],
+                                ['name' => $tradeData['stock_name'] ?? $prefixedCode]
+                            );
+
+                            // Parse the executed_at datetime to ensure proper comparison
+                            $executedAt = \Carbon\Carbon::parse($tradeData['executed_at']);
+
+                            // Check for duplicates (same time and stock_id)
+                            $exists = Trade::where('stock_id', $stock->id)
+                                ->where('executed_at', $executedAt)
+                                ->exists();
+
+                            if ($exists) {
+                                $skippedCount++;
+
+                                continue;
+                            }
+
+                            // Create trade with grid_id as null
+                            Trade::create([
+                                'grid_id' => null,
+                                'stock_id' => $stock->id,
+                                'side' => $tradeData['side'],
+                                'quantity' => (int) $tradeData['quantity'],
+                                'price' => (float) $tradeData['price'],
+                                'executed_at' => $executedAt,
+                            ]);
+
+                            $importedCount++;
+                        }
+
+                        DB::commit();
+
+                        // Clean up the uploaded file
+                        Storage::disk('local')->delete($filePath);
+
+                        $message = "Restored {$importedCount} trades successfully.";
+                        if ($skippedCount > 0) {
+                            $message .= " Skipped {$skippedCount} duplicates.";
+                        }
+
+                        if (! empty($errors)) {
+                            $message .= ' '.count($errors).' errors occurred.';
+                        }
+
+                        Notification::make()
+                            ->title($importedCount > 0 ? 'Restore Completed' : 'No Trades Restored')
+                            ->body($message)
+                            ->when(! empty($errors), fn ($notification) => $notification->warning())
+                            ->when(empty($errors) && $importedCount > 0, fn ($notification) => $notification->success())
+                            ->when($importedCount === 0 && empty($errors), fn ($notification) => $notification->info())
+                            ->send();
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+
+                        // Clean up the uploaded file even on error
+                        Storage::disk('local')->delete($filePath);
+
+                        Notification::make()
+                            ->title('Restore Failed')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
+                }),
         ];
     }
 }
