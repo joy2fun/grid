@@ -171,6 +171,7 @@ class IndexStockPricesChart extends ApexChartWidget
             '4y' => now()->subYears(4),
             '5y' => now()->subYears(5),
             '6y' => now()->subYears(6),
+            '9y' => now()->subYears(9),
             default => now()->subYears(3), // Default to 3 years
         };
     }

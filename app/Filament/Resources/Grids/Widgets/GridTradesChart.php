@@ -121,6 +121,9 @@ class GridTradesChart extends ApexChartWidget
                         'reset' => true,
                     ],
                 ],
+                'animations' => [
+                    'enabled' => false,
+                ],
             ],
             'series' => [
                 [

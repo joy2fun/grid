@@ -26,6 +26,8 @@ class StockPriceChart extends ApexChartWidget
             '200' => '200 Days',
             '300' => '300 Days',
             '600' => '600 Days',
+            '900' => '900 Days',
+            '2000' => '2000 Days',
         ];
     }
 
