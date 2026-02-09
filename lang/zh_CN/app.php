@@ -234,5 +234,6 @@ return [
         'sync_price' => '同步价格',
         'sync_prices' => '同步价格',
         'index_chart' => '指数图表',
+        'export_xirr_cashflow' => '导出 XIRR 现金流',
     ],
 ];

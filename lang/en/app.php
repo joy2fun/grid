@@ -234,5 +234,6 @@ return [
         'sync_price' => 'Sync Price',
         'sync_prices' => 'Sync Prices',
         'index_chart' => 'Index Chart',
+        'export_xirr_cashflow' => 'Export XIRR Cash Flow',
     ],
 ];

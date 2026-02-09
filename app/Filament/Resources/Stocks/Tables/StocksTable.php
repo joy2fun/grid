@@ -61,7 +61,49 @@ class StocksTable
                     ->badge()
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
                     ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state)
-                    ->default('-'),
+                    ->default('-')
+                    ->action(
+                        Action::make('exportXirrCashFlow')
+                            ->label(__('app.actions.export_xirr_cashflow'))
+                            ->icon('heroicon-o-arrow-down-tray')
+                            ->hidden(fn (Stock $record) => $record->type !== 'etf')
+                            ->action(function (Stock $record) {
+                                $cashFlows = [];
+                                $trades = $record->trades->sortBy('executed_at');
+
+                                foreach ($trades as $trade) {
+                                    $cost = (float) $trade->quantity * (float) $trade->price;
+                                    $cashFlows[] = [
+                                        'date' => $trade->executed_at->toDateString(),
+                                        'amount' => $trade->side === 'buy' ? -$cost : $cost,
+                                        'description' => ($trade->side === 'buy' ? 'Buy' : 'Sell').' '.$trade->quantity.' @ '.$trade->price,
+                                    ];
+                                }
+
+                                $holding = $record->holding;
+                                if ($holding && $holding->quantity > 0 && $record->current_price) {
+                                    $holdingValue = (float) $holding->quantity * (float) $record->current_price;
+                                    $cashFlows[] = [
+                                        'date' => now()->toDateString(),
+                                        'amount' => $holdingValue,
+                                        'description' => 'Current holding value: '.$holding->quantity.' shares @ '.$record->current_price,
+                                    ];
+                                }
+
+                                $csvContent = "Date,Amount,Description\n";
+                                foreach ($cashFlows as $flow) {
+                                    $csvContent .= "{$flow['date']},{$flow['amount']},\"{$flow['description']}\"\n";
+                                }
+
+                                $filename = 'xirr_cashflow_'.$record->code.'_'.now()->format('Ymd_His').'.csv';
+
+                                return response()->streamDownload(function () use ($csvContent) {
+                                    echo $csvContent;
+                                }, $filename, [
+                                    'Content-Type' => 'text/csv',
+                                ]);
+                            })
+                    ),
 
                 TextColumn::make('last_trade_at')
                     ->label(__('app.stock.last_trade'))
