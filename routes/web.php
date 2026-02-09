@@ -1,10 +1,10 @@
 <?php
 
+use App\Http\Controllers\SetupController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return 'It works!';
-});
+Route::get('/', [SetupController::class, 'index']);
+Route::post('/setup', [SetupController::class, 'store'])->name('setup.store');
 
 Route::get('/login', function () {
     return 'login';
