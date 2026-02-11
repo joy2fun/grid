@@ -38,10 +38,16 @@ The output MUST be a valid JSON object with a "trades" key containing an array o
 Each trade object MUST have the following fields:
 - "code": The stock code (e.g., "601166" or "000001").
 - "name": The stock name (e.g., "兴业银行" or "平安银行").
-- "quantity": The number of shares/units traded (integer).
-- "price": The execution price (float).
+- "type": The transaction type - one of: "buy" (买入), "sell" (卖出), "dividend" (现金分红), "stock_dividend" (送股/转增股), "stock_split" (股票分割/合并).
+- "quantity": For buy/sell/dividend: number of shares. For stock_dividend: base share count (e.g., if 10送3, this is 10). For stock_split: not required.
+- "price": For buy/sell: execution price. For dividend: dividend amount per share. For stock_dividend: ratio (e.g., 0.3 for 10送3). For stock_split: ratio.
 - "time": The execution time in "YYYY-MM-DD HH:MM:SS" format.
-- "side": Either "buy" or "sell".
+
+Examples:
+- Buy 1000 shares at ¥25.50: type="buy", quantity=1000, price=25.50
+- Cash dividend of ¥0.5 per share with 1000 shares: type="dividend", quantity=1000, price=0.5
+- Stock dividend 10送3 (10 shares get 3 bonus): type="stock_dividend", quantity=10, price=0.3
+- Stock split 1:2 (1 share becomes 2): type="stock_split", price=2.0
 
 If any field is missing, try to infer it or leave it null if impossible.
 ONLY return the JSON object, no other text or explanation.

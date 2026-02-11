@@ -20,13 +20,17 @@ return new class extends Migration
             $totalCost = 0;
 
             foreach ($trades as $trade) {
-                if ($trade->side === 'buy') {
+                // Support both old 'side' and new 'type' fields
+                $tradeType = $trade->type ?? $trade->side ?? null;
+
+                if ($tradeType === 'buy') {
                     $quantity += $trade->quantity;
                     $totalCost += $trade->quantity * $trade->price;
-                } elseif ($trade->side === 'sell') {
+                } elseif ($tradeType === 'sell') {
                     $quantity -= $trade->quantity;
                     $totalCost -= $trade->quantity * $trade->price;
                 }
+                // dividend, stock_split, stock_dividend don't affect holdings calculation
             }
 
             $averageCost = $quantity > 0 ? $totalCost / $quantity : 0;

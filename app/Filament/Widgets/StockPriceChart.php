@@ -68,7 +68,28 @@ class StockPriceChart extends ApexChartWidget
 
         $pointAnnotations = $trades->map(function ($trade) {
             $dateStr = $trade->executed_at->toDateString();
-            $color = $trade->side === 'buy' ? '#00E396' : '#FF4560';
+            $color = match ($trade->type) {
+                'buy' => '#00E396',
+                'sell' => '#FF4560',
+                'dividend' => '#008FFB',
+                'stock_dividend' => '#FEB019',
+                'stock_split' => '#775DD0',
+                default => '#999999',
+            };
+
+            $typeLabel = match ($trade->type) {
+                'buy' => 'B',
+                'sell' => 'S',
+                'dividend' => 'D',
+                'stock_dividend' => 'G',
+                'stock_split' => 'P',
+                default => 'T',
+            };
+
+            // Only show annotations for buy/sell trades on price chart
+            if (! in_array($trade->type, ['buy', 'sell'])) {
+                return null;
+            }
 
             return [
                 'x' => $dateStr,
@@ -88,11 +109,11 @@ class StockPriceChart extends ApexChartWidget
                         'fontSize' => '10px',
                         'fontWeight' => 'bold',
                     ],
-                    'text' => ($trade->side === 'buy' ? 'B ' : 'S ').number_format($trade->price, 3),
+                    'text' => $typeLabel.' '.number_format($trade->price, 3),
                     'offsetY' => -10,
                 ],
             ];
-        })->values()->toArray();
+        })->filter()->values()->toArray();
 
         return [
             'chart' => [

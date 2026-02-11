@@ -13,7 +13,7 @@ class SaveTradesTool extends Tool
      * The tool's description.
      */
     protected string $description = <<<'MARKDOWN'
-        Save one or more trades to the database. This tool accepts trade data including stock code, side (buy/sell), quantity, price, and execution time. If a stock does not exist, it will be automatically created.
+        Save one or more trades to the database. This tool accepts trade data including stock code, type (buy/sell/dividend/stock_dividend/stock_split), quantity, price, and execution time. If a stock does not exist, it will be automatically created.
     MARKDOWN;
 
     /**
@@ -24,18 +24,19 @@ class SaveTradesTool extends Tool
         $validated = $request->validate([
             'trades' => ['required', 'array', 'min:1'],
             'trades.*.code' => ['required', 'string', 'max:20'],
-            'trades.*.side' => ['required', 'string', 'in:buy,sell'],
-            'trades.*.quantity' => ['required', 'integer', 'min:1'],
+            'trades.*.type' => ['required', 'string', 'in:buy,sell,dividend,stock_dividend,stock_split'],
+            'trades.*.quantity' => ['required', 'integer', 'min:0'],
             'trades.*.price' => ['required', 'numeric', 'min:0'],
+            'trades.*.split_ratio' => ['nullable', 'numeric', 'min:0'],
             'trades.*.time' => ['required', 'date'],
             'trades.*.grid_id' => ['nullable', 'integer', 'exists:grids,id'],
         ], [
             'trades.required' => 'You must provide at least one trade in the "trades" array.',
             'trades.*.code.required' => 'Each trade must include a stock code.',
-            'trades.*.side.required' => 'Each trade must specify a side (buy or sell).',
-            'trades.*.side.in' => 'The side must be either "buy" or "sell".',
+            'trades.*.type.required' => 'Each trade must specify a type.',
+            'trades.*.type.in' => 'The type must be one of: buy, sell, dividend, stock_dividend, stock_split.',
             'trades.*.quantity.required' => 'Each trade must include a quantity.',
-            'trades.*.quantity.min' => 'Quantity must be at least 1.',
+            'trades.*.quantity.min' => 'Quantity must be 0 or greater.',
             'trades.*.price.required' => 'Each trade must include a price.',
             'trades.*.price.min' => 'Price must be 0 or greater.',
             'trades.*.time.required' => 'Each trade must include an execution time.',
@@ -54,15 +55,22 @@ class SaveTradesTool extends Tool
                     ['name' => $tradeData['code']]
                 );
 
-                // Create the trade
-                \App\Models\Trade::create([
+                $createData = [
                     'grid_id' => $tradeData['grid_id'] ?? null,
                     'stock_id' => $stock->id,
-                    'side' => $tradeData['side'],
+                    'type' => $tradeData['type'],
                     'quantity' => $tradeData['quantity'],
                     'price' => $tradeData['price'],
                     'executed_at' => $tradeData['time'],
-                ]);
+                ];
+
+                // Handle split_ratio for stock_dividend and stock_split
+                if (in_array($tradeData['type'], ['stock_dividend', 'stock_split'])) {
+                    $createData['split_ratio'] = $tradeData['split_ratio'] ?? $tradeData['price'];
+                }
+
+                // Create the trade
+                \App\Models\Trade::create($createData);
 
                 $savedCount++;
             } catch (\Exception $e) {
@@ -89,7 +97,7 @@ class SaveTradesTool extends Tool
     {
         return [
             'trades' => $schema->array()
-                ->description('An array of trade objects. Each object must include: code (string), side (string: "buy" or "sell"), quantity (integer), price (number), time (string: ISO 8601 datetime), and optionally grid_id (integer).')
+                ->description('An array of trade objects. Each object must include: code (string), type (string: "buy", "sell", "dividend", "stock_dividend", or "stock_split"), quantity (integer), price (number), time (string: ISO 8601 datetime), and optionally grid_id (integer) and split_ratio (number).')
                 ->required(),
         ];
     }

@@ -46,7 +46,7 @@ class GridMetricsTest extends TestCase
         Trade::factory()->create([
             'grid_id' => $grid->id,
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'price' => 10.0,
             'quantity' => 1000,
             'executed_at' => '2023-01-01 10:00:00',
@@ -103,7 +103,7 @@ class GridMetricsTest extends TestCase
         Trade::factory()->create([
             'grid_id' => $grid->id,
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'price' => 10.0,
             'quantity' => 100,
             'executed_at' => '2023-01-01 10:00:00',
@@ -113,7 +113,7 @@ class GridMetricsTest extends TestCase
         Trade::factory()->create([
             'grid_id' => $grid->id,
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'price' => 9.0,
             'quantity' => 100,
             'executed_at' => '2023-01-02 10:00:00',

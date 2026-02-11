@@ -33,7 +33,7 @@ class InactiveStocksTable extends TableWidget
             ->query(
                 Stock::inactiveStocks()
                     ->with(['trades' => function ($query) {
-                        $query->latest('executed_at');
+                        $query->whereIn('type', ['buy', 'sell'])->latest('executed_at');
                     }])
             )
             ->columns([

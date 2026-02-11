@@ -38,7 +38,7 @@ class TradeBackupRestoreTest extends TestCase
 
         Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 100,
             'price' => 10.5,
             'executed_at' => now(),
@@ -65,7 +65,7 @@ class TradeBackupRestoreTest extends TestCase
                 [
                     'stock_code' => '601166',
                     'stock_name' => 'Industrial Bank',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 100,
                     'price' => 15.5,
                     'executed_at' => now()->subDays(5)->toIso8601String(),
@@ -73,7 +73,7 @@ class TradeBackupRestoreTest extends TestCase
                 [
                     'stock_code' => '000001',
                     'stock_name' => 'New Stock',
-                    'side' => 'sell',
+                    'type' => 'sell',
                     'quantity' => 50,
                     'price' => 20.0,
                     'executed_at' => now()->subDays(3)->toIso8601String(),
@@ -93,12 +93,12 @@ class TradeBackupRestoreTest extends TestCase
         // Assert that trades were imported
         $this->assertDatabaseCount('trades', 2);
         $this->assertDatabaseHas('trades', [
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 100,
             'price' => 15.5,
         ]);
         $this->assertDatabaseHas('trades', [
-            'side' => 'sell',
+            'type' => 'sell',
             'quantity' => 50,
             'price' => 20.0,
         ]);
@@ -121,7 +121,7 @@ class TradeBackupRestoreTest extends TestCase
         $executionTime = now()->subDays(5)->startOfSecond();
         Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 100,
             'price' => 15.5,
             'executed_at' => $executionTime,
@@ -137,7 +137,7 @@ class TradeBackupRestoreTest extends TestCase
                 [
                     'stock_code' => '601166',
                     'stock_name' => 'Industrial Bank',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 100,
                     'price' => 15.5,
                     'executed_at' => $executionTime->toDateTimeString(),
@@ -145,7 +145,7 @@ class TradeBackupRestoreTest extends TestCase
                 [
                     'stock_code' => '601166',
                     'stock_name' => 'Industrial Bank',
-                    'side' => 'sell',
+                    'type' => 'sell',
                     'quantity' => 50,
                     'price' => 20.0,
                     'executed_at' => now()->subDays(2)->toDateTimeString(),
@@ -165,7 +165,7 @@ class TradeBackupRestoreTest extends TestCase
         // Should have 2 trades total (1 existing + 1 new)
         $this->assertDatabaseCount('trades', 2);
         $this->assertDatabaseHas('trades', [
-            'side' => 'sell',
+            'type' => 'sell',
             'quantity' => 50,
         ]);
     }

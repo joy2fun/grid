@@ -48,23 +48,58 @@ class Grid extends Model
         $maxCashOccupied = 0;
 
         foreach ($trades as $trade) {
-            $cost = (float) $trade->quantity * (float) $trade->price;
             $date = $trade->executed_at->toDateString();
 
-            if ($trade->side === 'buy') {
-                $cash -= $cost;
-                $shares += $trade->quantity;
-                $cashFlows[] = -$cost;
-            } else {
-                $cash += $cost;
-                $shares -= $trade->quantity;
-                $cashFlows[] = $cost;
-            }
+            switch ($trade->type) {
+                case 'buy':
+                    $cost = (float) $trade->quantity * (float) $trade->price;
+                    $cash -= $cost;
+                    $shares += (float) $trade->quantity;
+                    $cashFlows[] = -$cost;
+                    $dates[] = $date;
 
-            $dates[] = $date;
+                    if ($cash < $maxCashOccupied) {
+                        $maxCashOccupied = $cash;
+                    }
 
-            if ($cash < $maxCashOccupied) {
-                $maxCashOccupied = $cash;
+                    break;
+
+                case 'sell':
+                    $proceeds = (float) $trade->quantity * (float) $trade->price;
+                    $cash += $proceeds;
+                    $shares -= (float) $trade->quantity;
+                    $cashFlows[] = $proceeds;
+                    $dates[] = $date;
+
+                    break;
+
+                case 'dividend':
+                    // Dividend is cash income
+                    $dividendAmount = (float) $trade->quantity * (float) $trade->price;
+                    if ($dividendAmount > 0) {
+                        $cash += $dividendAmount;
+                        $cashFlows[] = $dividendAmount;
+                        $dates[] = $date;
+                    }
+
+                    break;
+
+                case 'stock_split':
+                    $ratio = (float) ($trade->split_ratio ?? 1);
+                    if ($ratio > 0) {
+                        $shares = $shares * $ratio;
+                    }
+
+                    break;
+
+                case 'stock_dividend':
+                    $ratio = (float) ($trade->split_ratio ?? 0);
+                    if ($ratio > 0) {
+                        $additionalShares = $shares * $ratio;
+                        $shares += $additionalShares;
+                    }
+
+                    break;
             }
         }
 

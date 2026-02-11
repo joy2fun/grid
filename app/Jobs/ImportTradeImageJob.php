@@ -95,12 +95,36 @@ class ImportTradeImageJob implements ShouldQueue
         try {
             foreach ($result['trades'] as $index => $tradeData) {
                 $code = $tradeData['code'] ?? $this->fallbackCode;
+                $type = $tradeData['type'] ?? $tradeData['side'] ?? null;
 
                 if (
-                    ! $code || ! isset($tradeData['quantity']) ||
-                    ! isset($tradeData['price']) || ! isset($tradeData['time']) || ! isset($tradeData['side'])
+                    ! $code || ! isset($tradeData['time']) || ! $type
                 ) {
                     $errors[] = 'Trade #'.($index + 1).': Missing required fields';
+
+                    continue;
+                }
+
+                // Validate trade type
+                $validTypes = ['buy', 'sell', 'dividend', 'stock_split', 'stock_dividend'];
+                if (! in_array($type, $validTypes)) {
+                    $errors[] = 'Trade #'.($index + 1).': Invalid trade type: '.$type;
+
+                    continue;
+                }
+
+                // For buy/sell/dividend, require quantity and price
+                if (in_array($type, ['buy', 'sell', 'dividend'])) {
+                    if (! isset($tradeData['quantity']) || ! isset($tradeData['price'])) {
+                        $errors[] = 'Trade #'.($index + 1).': Missing quantity or price for '.$type;
+
+                        continue;
+                    }
+                }
+
+                // For stock_split/stock_dividend, require price (as ratio)
+                if (in_array($type, ['stock_split', 'stock_dividend']) && ! isset($tradeData['price'])) {
+                    $errors[] = 'Trade #'.($index + 1).': Missing ratio for '.$type;
 
                     continue;
                 }
@@ -112,24 +136,45 @@ class ImportTradeImageJob implements ShouldQueue
                     ['name' => $tradeData['name'] ?? $prefixedCode]
                 );
 
-                $exists = Trade::where('stock_id', $stock->id)
+                // Check for duplicates - more specific for non-buy/sell types
+                $existsQuery = Trade::where('stock_id', $stock->id)
                     ->where('executed_at', $tradeData['time'])
-                    ->exists();
+                    ->where('type', $type);
 
-                if ($exists) {
+                if (isset($tradeData['quantity'])) {
+                    $existsQuery->where('quantity', $tradeData['quantity']);
+                }
+
+                if ($existsQuery->exists()) {
                     $skippedCount++;
 
                     continue;
                 }
 
-                Trade::create([
+                $tradeCreateData = [
                     'grid_id' => null,
                     'stock_id' => $stock->id,
-                    'side' => $tradeData['side'],
-                    'quantity' => (int) $tradeData['quantity'],
-                    'price' => (float) $tradeData['price'],
+                    'type' => $type,
                     'executed_at' => $tradeData['time'],
-                ]);
+                ];
+
+                // Handle different trade types
+                if (in_array($type, ['buy', 'sell', 'dividend'])) {
+                    $tradeCreateData['quantity'] = (int) $tradeData['quantity'];
+                    $tradeCreateData['price'] = (float) $tradeData['price'];
+                } elseif ($type === 'stock_dividend') {
+                    // For stock_dividend: store base quantity, ratio in split_ratio
+                    $tradeCreateData['quantity'] = (int) ($tradeData['quantity'] ?? 0);
+                    $tradeCreateData['price'] = 0;
+                    $tradeCreateData['split_ratio'] = (float) $tradeData['price']; // price field contains ratio
+                } elseif ($type === 'stock_split') {
+                    // For stock_split: ratio is in price field
+                    $tradeCreateData['quantity'] = 0;
+                    $tradeCreateData['price'] = 0;
+                    $tradeCreateData['split_ratio'] = (float) $tradeData['price']; // price field contains ratio
+                }
+
+                Trade::create($tradeCreateData);
 
                 $importedCount++;
             }

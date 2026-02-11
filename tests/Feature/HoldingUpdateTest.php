@@ -18,7 +18,7 @@ class HoldingUpdateTest extends TestCase
 
         Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 10,
             'price' => 100,
         ]);
@@ -37,14 +37,14 @@ class HoldingUpdateTest extends TestCase
 
         Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 10,
             'price' => 100,
         ]);
 
         Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 5,
             'price' => 110,
         ]);
@@ -63,14 +63,14 @@ class HoldingUpdateTest extends TestCase
 
         Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 10,
             'price' => 100,
         ]);
 
         Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'sell',
+            'type' => 'sell',
             'quantity' => 4,
             'price' => 120,
         ]);
@@ -90,14 +90,14 @@ class HoldingUpdateTest extends TestCase
 
         $trade1 = Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 10,
             'price' => 100,
         ]);
 
         $trade2 = Trade::factory()->create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 5,
             'price' => 110,
         ]);

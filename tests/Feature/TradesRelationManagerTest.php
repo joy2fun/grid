@@ -67,7 +67,7 @@ class TradesRelationManagerTest extends TestCase
             'pageClass' => EditGrid::class,
         ])
             ->callTableAction('create', data: [
-                'side' => 'buy',
+                'type' => 'buy',
                 'price' => 10.5,
                 'quantity' => 100,
             ])
@@ -76,7 +76,7 @@ class TradesRelationManagerTest extends TestCase
         $this->assertDatabaseHas('trades', [
             'grid_id' => $this->grid->id,
             'stock_id' => $this->stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'price' => 10.5,
             'quantity' => 100,
         ]);

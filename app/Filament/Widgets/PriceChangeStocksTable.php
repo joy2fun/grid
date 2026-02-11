@@ -31,9 +31,11 @@ class PriceChangeStocksTable extends TableWidget
 
         return Stock::query()
             ->where('type', '!=', 'index')
-            ->whereHas('trades')
+            ->whereHas('trades', function ($query) {
+                $query->whereIn('type', ['buy', 'sell']);
+            })
             ->with(['trades' => function ($query) {
-                $query->latest('executed_at');
+                $query->whereIn('type', ['buy', 'sell'])->latest('executed_at');
             }])
             ->whereNotNull('current_price')
             ->get()

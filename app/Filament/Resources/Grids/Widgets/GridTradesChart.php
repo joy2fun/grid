@@ -73,12 +73,32 @@ class GridTradesChart extends ApexChartWidget
                 return $datesMap->has($dateStr);
             })
             ->map(function ($trade) {
-                $color = $trade->side === 'buy' ? '#00E396' : '#FF4560';
-                $sideChar = str($trade->side)->substr(0, 1)->upper();
+                $color = match ($trade->type) {
+                    'buy' => '#00E396',
+                    'sell' => '#FF4560',
+                    'dividend' => '#008FFB',
+                    'stock_dividend' => '#FEB019',
+                    'stock_split' => '#775DD0',
+                    default => '#999999',
+                };
+
+                $typeChar = match ($trade->type) {
+                    'buy' => 'B',
+                    'sell' => 'S',
+                    'dividend' => 'D',
+                    'stock_dividend' => 'G',
+                    'stock_split' => 'P',
+                    default => 'T',
+                };
 
                 $dateStr = $trade->executed_at instanceof \Carbon\Carbon
                     ? $trade->executed_at->toDateString()
                     : \Illuminate\Support\Carbon::parse($trade->executed_at)->toDateString();
+
+                // Only show price markers for buy/sell trades
+                if (! in_array($trade->type, ['buy', 'sell'])) {
+                    return null;
+                }
 
                 // Use the ACTUAL TRADING PRICE for the marker position y-value
                 $yPosition = (float) $trade->price;
@@ -102,10 +122,10 @@ class GridTradesChart extends ApexChartWidget
                             'fontSize' => '10px',
                             'fontWeight' => 'bold',
                         ],
-                        'text' => "{$sideChar} ".number_format($trade->price, 3),
+                        'text' => "{$typeChar} ".number_format($trade->price, 3),
                     ],
                 ];
-            })->values()->toArray();
+            })->filter()->values()->toArray();
 
         return [
             'chart' => [

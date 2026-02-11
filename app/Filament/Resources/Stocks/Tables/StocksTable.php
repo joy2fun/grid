@@ -72,12 +72,40 @@ class StocksTable
                                 $trades = $record->trades->sortBy('executed_at');
 
                                 foreach ($trades as $trade) {
-                                    $cost = (float) $trade->quantity * (float) $trade->price;
-                                    $cashFlows[] = [
-                                        'date' => $trade->executed_at->toDateString(),
-                                        'amount' => $trade->side === 'buy' ? -$cost : $cost,
-                                        'description' => ($trade->side === 'buy' ? 'Buy' : 'Sell').' '.$trade->quantity.' @ '.$trade->price,
-                                    ];
+                                    $amount = (float) $trade->quantity * (float) $trade->price;
+                                    $cashFlow = match ($trade->type) {
+                                        'buy' => [
+                                            'date' => $trade->executed_at->toDateString(),
+                                            'amount' => -$amount,
+                                            'description' => 'Buy '.$trade->quantity.' @ '.$trade->price,
+                                        ],
+                                        'sell' => [
+                                            'date' => $trade->executed_at->toDateString(),
+                                            'amount' => $amount,
+                                            'description' => 'Sell '.$trade->quantity.' @ '.$trade->price,
+                                        ],
+                                        'dividend' => [
+                                            'date' => $trade->executed_at->toDateString(),
+                                            'amount' => $amount,
+                                            'description' => 'Dividend '.$trade->quantity.' shares @ '.$trade->price.'/share',
+                                        ],
+                                        'stock_dividend' => [
+                                            'date' => $trade->executed_at->toDateString(),
+                                            'amount' => 0,
+                                            'description' => 'Stock Dividend base='.$trade->quantity.' ratio='.($trade->split_ratio ?? $trade->price),
+                                        ],
+                                        'stock_split' => [
+                                            'date' => $trade->executed_at->toDateString(),
+                                            'amount' => 0,
+                                            'description' => 'Stock Split ratio='.($trade->split_ratio ?? $trade->price),
+                                        ],
+                                        default => [
+                                            'date' => $trade->executed_at->toDateString(),
+                                            'amount' => 0,
+                                            'description' => $trade->type.' '.$trade->quantity.' @ '.$trade->price,
+                                        ],
+                                    };
+                                    $cashFlows[] = $cashFlow;
                                 }
 
                                 $holding = $record->holding;
@@ -134,7 +162,7 @@ class StocksTable
             ])
             ->modifyQueryUsing(fn ($query) => $query->with([
                 'dayPrices' => fn ($q) => $q->latest('date')->limit(2),
-                'trades' => fn ($q) => $q->select('id', 'stock_id', 'side', 'price', 'quantity', 'executed_at'),
+                'trades' => fn ($q) => $q->select('id', 'stock_id', 'type', 'price', 'quantity', 'split_ratio', 'executed_at'),
                 'holding',
             ]))
             ->filters([

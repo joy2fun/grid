@@ -46,7 +46,9 @@ class Stock extends Model
 
     public function getLastTradeAtAttribute(): string
     {
-        $dt = $this->trades->max('executed_at');
+        $dt = $this->trades()
+            ->whereIn('type', ['buy', 'sell'])
+            ->max('executed_at');
 
         return $dt ? Carbon::parse($dt)->diffForHumans() : '-';
     }
@@ -54,7 +56,10 @@ class Stock extends Model
     public function isInactive(): bool
     {
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);
-        $lastTrade = $this->trades()->latest('executed_at')->first();
+        $lastTrade = $this->trades()
+            ->whereIn('type', ['buy', 'sell'])
+            ->latest('executed_at')
+            ->first();
 
         if (! $lastTrade) {
             return false; // No trades ever, not considered inactive
@@ -81,16 +86,39 @@ class Stock extends Model
         $dates = [];
 
         foreach ($trades as $trade) {
-            $cost = (float) $trade->quantity * (float) $trade->price;
             $date = $trade->executed_at->toDateString();
 
-            if ($trade->side === 'buy') {
-                $cashFlows[] = -$cost;
-            } else {
-                $cashFlows[] = $cost;
-            }
+            switch ($trade->type) {
+                case 'buy':
+                    $cost = (float) $trade->quantity * (float) $trade->price;
+                    $cashFlows[] = -$cost;
+                    $dates[] = $date;
 
-            $dates[] = $date;
+                    break;
+
+                case 'sell':
+                    $proceeds = (float) $trade->quantity * (float) $trade->price;
+                    $cashFlows[] = $proceeds;
+                    $dates[] = $date;
+
+                    break;
+
+                case 'dividend':
+                    // Dividend is positive cash flow (no cost)
+                    $dividendAmount = (float) $trade->quantity * (float) $trade->price;
+                    if ($dividendAmount > 0) {
+                        $cashFlows[] = $dividendAmount;
+                        $dates[] = $date;
+                    }
+
+                    break;
+
+                case 'stock_split':
+                case 'stock_dividend':
+                    // Stock splits and dividends don't directly affect cash flow
+                    // They affect quantity which impacts final holding value
+                    break;
+            }
         }
 
         // Current valuation as final cash flow
@@ -109,11 +137,14 @@ class Stock extends Model
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);
         $cutoffDate = Carbon::now()->subDays($threshold);
 
-        // Only include stocks with trades, but none more recent than the threshold, and not index type
+        // Only include stocks with buy/sell trades, but none more recent than the threshold, and not index type
         return static::where('type', '!=', 'index')
-            ->whereHas('trades')
+            ->whereHas('trades', function ($query) {
+                $query->whereIn('type', ['buy', 'sell']);
+            })
             ->whereDoesntHave('trades', function ($subquery) use ($cutoffDate) {
-                $subquery->where('executed_at', '>=', $cutoffDate);
+                $subquery->whereIn('type', ['buy', 'sell'])
+                    ->where('executed_at', '>=', $cutoffDate);
             });
     }
 }

@@ -34,7 +34,8 @@ class QueryTradesTool extends Tool
             'end_time' => ['nullable', 'date', 'after_or_equal:start_time'],
             'stock_code' => ['nullable', 'string', 'max:20'],
             'stock_name' => ['nullable', 'string', 'max:100'],
-            'side' => ['nullable', 'string', 'in:buy,sell'],
+            'type' => ['nullable', 'string', 'in:buy,sell,dividend,stock_dividend,stock_split'],
+            'side' => ['nullable', 'string', 'in:buy,sell,dividend,stock_dividend,stock_split'], // Backward compatibility
             'grid_id' => ['nullable', 'integer'],
             // Advanced filters
             'min_days_since_trade' => ['nullable', 'integer', 'min:1'],
@@ -42,7 +43,8 @@ class QueryTradesTool extends Tool
             'limit' => ['nullable', 'integer', 'min:1', 'max:1000'],
         ], [
             'end_time.after_or_equal' => 'The end time must be after or equal to the start time.',
-            'side.in' => 'The side must be either "buy" or "sell".',
+            'type.in' => 'The type must be one of: buy, sell, dividend, stock_dividend, stock_split.',
+            'side.in' => 'The side must be one of: buy, sell, dividend, stock_dividend, stock_split.',
             'limit.max' => 'The limit cannot exceed 1000 records.',
         ]);
 
@@ -81,8 +83,8 @@ class QueryTradesTool extends Tool
                     $q->where('name', 'like', "%{$stockName}%");
                 });
             })
-            ->when($validated['side'] ?? null, function (Builder $query, string $side): void {
-                $query->where('side', $side);
+            ->when($validated['type'] ?? $validated['side'] ?? null, function (Builder $query, string $type): void {
+                $query->where('type', $type);
             })
             ->when($validated['grid_id'] ?? null, function (Builder $query, int $gridId): void {
                 $query->where('grid_id', $gridId);
@@ -118,11 +120,16 @@ class QueryTradesTool extends Tool
         $minPriceChangePercent = $validated['min_price_change_percent'] ?? 10;
         $limit = $validated['limit'] ?? 100;
 
-        $stocks = Stock::whereHas('trades')->get();
+        $stocks = Stock::whereHas('trades', function ($query) {
+            $query->whereIn('type', ['buy', 'sell']);
+        })->get();
         $results = [];
 
         foreach ($stocks as $stock) {
-            $lastTrade = $stock->trades()->orderBy('executed_at', 'desc')->first();
+            $lastTrade = $stock->trades()
+                ->whereIn('type', ['buy', 'sell'])
+                ->orderBy('executed_at', 'desc')
+                ->first();
 
             if (! $lastTrade) {
                 continue;
@@ -175,11 +182,12 @@ class QueryTradesTool extends Tool
      */
     private function buildSummary($trades): string
     {
-        $totalBuyQuantity = $trades->where('side', 'buy')->sum('quantity');
-        $totalSellQuantity = $trades->where('side', 'sell')->sum('quantity');
-        $totalBuyValue = $trades->where('side', 'buy')->sum(fn (Trade $trade): float => $trade->price * $trade->quantity);
-        $totalSellValue = $trades->where('side', 'sell')->sum(fn (Trade $trade): float => $trade->price * $trade->quantity);
-        $avgPrice = $trades->avg('price');
+        $totalBuyQuantity = $trades->where('type', 'buy')->sum('quantity');
+        $totalSellQuantity = $trades->where('type', 'sell')->sum('quantity');
+        $totalBuyValue = $trades->where('type', 'buy')->sum(fn (Trade $trade): float => $trade->price * $trade->quantity);
+        $totalSellValue = $trades->where('type', 'sell')->sum(fn (Trade $trade): float => $trade->price * $trade->quantity);
+        $totalDividend = $trades->where('type', 'dividend')->sum(fn (Trade $trade): float => $trade->price * $trade->quantity);
+        $avgPrice = $trades->whereIn('type', ['buy', 'sell'])->avg('price');
 
         $lines = [
             "Total Buy Quantity: {$totalBuyQuantity}",
@@ -188,7 +196,8 @@ class QueryTradesTool extends Tool
             'Total Sell Value: ¥'.number_format($totalSellValue, 2),
             'Net Quantity: '.($totalBuyQuantity - $totalSellQuantity),
             'Net Value: ¥'.number_format($totalSellValue - $totalBuyValue, 2),
-            'Average Price: ¥'.number_format($avgPrice, 3),
+            'Total Dividend: ¥'.number_format($totalDividend, 2),
+            'Average Price: ¥'.number_format($avgPrice ?? 0, 3),
         ];
 
         return implode("\n", $lines);
@@ -207,23 +216,62 @@ class QueryTradesTool extends Tool
             $stockCode = $trade->stock?->code ?? 'N/A';
             $stockName = $trade->stock?->name ?? 'N/A';
             $gridName = $trade->grid?->name ?? 'N/A';
-            $value = $trade->price * $trade->quantity;
+            $typeLabel = $this->getTypeLabel($trade->type);
+
+            // Format based on trade type
+            $details = match ($trade->type) {
+                'buy', 'sell' => sprintf(
+                    '%s shares @ ¥%s = ¥%s',
+                    number_format($trade->quantity),
+                    number_format($trade->price, 3),
+                    number_format($trade->price * $trade->quantity, 2)
+                ),
+                'dividend' => sprintf(
+                    '%s shares × ¥%s = ¥%s',
+                    number_format($trade->quantity),
+                    number_format($trade->price, 4),
+                    number_format($trade->price * $trade->quantity, 2)
+                ),
+                'stock_dividend' => sprintf(
+                    'Base: %s shares, Ratio: %s (Bonus: %s)',
+                    number_format($trade->quantity),
+                    number_format($trade->split_ratio ?? $trade->price, 4),
+                    number_format($trade->quantity * ($trade->split_ratio ?? $trade->price))
+                ),
+                'stock_split' => sprintf(
+                    'Ratio: %s:1',
+                    number_format($trade->split_ratio ?? $trade->price, 4)
+                ),
+                default => sprintf('%s @ ¥%s', number_format($trade->quantity), number_format($trade->price, 4)),
+            };
 
             $lines[] = sprintf(
-                '[%s] %s %s | %s (%s) | %s shares @ ¥%s = ¥%s | Grid: %s',
+                '[%s] %s %s | %s | %s | Grid: %s',
                 $trade->executed_at->format('Y-m-d H:i:s'),
-                strtoupper($trade->side),
+                strtoupper($trade->type),
                 $stockCode,
                 $stockName,
-                $trade->side === 'buy' ? '买入' : '卖出',
-                number_format($trade->quantity),
-                number_format($trade->price, 3),
-                number_format($value, 2),
+                $details,
                 $gridName
             );
         }
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * Get the label for a trade type.
+     */
+    private function getTypeLabel(string $type): string
+    {
+        return match ($type) {
+            'buy' => '买入',
+            'sell' => '卖出',
+            'dividend' => '分红',
+            'stock_dividend' => '送股',
+            'stock_split' => '拆股',
+            default => $type,
+        };
     }
 
     /**
@@ -287,8 +335,8 @@ class QueryTradesTool extends Tool
                 ->description('Filter by stock code (partial match supported, e.g., "000001"). Optional.'),
             'stock_name' => $schema->string()
                 ->description('Filter by stock name (partial match supported, e.g., "Ping An"). Optional.'),
-            'side' => $schema->string()
-                ->description('Filter by trade side: "buy" or "sell". Optional.'),
+            'type' => $schema->string()
+                ->description('Filter by trade type: "buy", "sell", "dividend", "stock_dividend", or "stock_split". Optional.'),
             'grid_id' => $schema->integer()
                 ->description('Filter by grid ID. Optional.'),
             // Advanced filters for stock analysis

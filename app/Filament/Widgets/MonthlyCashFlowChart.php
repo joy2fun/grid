@@ -37,11 +37,12 @@ class MonthlyCashFlowChart extends ApexChartWidget
 
         foreach ($trades as $trade) {
             $amount = $trade->price * $trade->quantity;
-            if ($trade->side === 'buy') {
+            if ($trade->type === 'buy') {
                 $totalBuy += $amount;
-            } else {
+            } elseif ($trade->type === 'sell') {
                 $totalSell += $amount;
             }
+            // Dividend, stock_split, stock_dividend don't affect buy/sell cash flow
         }
 
         $subHeadingText = 'Out: ¥'.number_format($totalBuy, 2).' | In: ¥'.number_format($totalSell, 2);
@@ -58,9 +59,9 @@ class MonthlyCashFlowChart extends ApexChartWidget
 
         foreach ($trades as $trade) {
             $month = $trade->executed_at->format('Y-m');
-            if (isset($monthlyData[$month])) {
+            if (isset($monthlyData[$month]) && in_array($trade->type, ['buy', 'sell'])) {
                 $amount = $trade->price * $trade->quantity;
-                $monthlyData[$month][$trade->side] += $amount;
+                $monthlyData[$month][$trade->type] += $amount;
             }
         }
 

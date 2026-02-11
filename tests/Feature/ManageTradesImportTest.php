@@ -31,7 +31,7 @@ class ManageTradesImportTest extends TestCase
                     'quantity' => 100,
                     'price' => 10.5,
                     'time' => '2026-01-01 09:30:00',
-                    'side' => 'buy',
+                    'type' => 'buy',
                 ],
             ],
         ]);
@@ -50,7 +50,7 @@ class ManageTradesImportTest extends TestCase
         $this->assertDatabaseHas('trades', [
             'quantity' => 100,
             'price' => 10.5,
-            'side' => 'buy',
+            'type' => 'buy',
         ]);
 
         $stock = Stock::where('code', 'sh601166')->first();
@@ -76,7 +76,7 @@ class ManageTradesImportTest extends TestCase
                     'quantity' => 100,
                     'price' => 10.5,
                     'time' => '2026-01-01 09:30:00',
-                    'side' => 'buy',
+                    'type' => 'buy',
                 ],
             ],
         ]);

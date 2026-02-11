@@ -24,12 +24,39 @@ class HoldingObserver
         $totalCost = $holding->initial_quantity * $holding->initial_cost;
 
         foreach ($trades as $trade) {
-            if ($trade->side === 'buy') {
-                $quantity += $trade->quantity;
-                $totalCost += $trade->quantity * $trade->price;
-            } elseif ($trade->side === 'sell') {
-                $quantity -= $trade->quantity;
-                $totalCost -= $trade->quantity * $trade->price;
+            switch ($trade->type) {
+                case 'buy':
+                    $quantity += $trade->quantity;
+                    $totalCost += $trade->quantity * $trade->price;
+
+                    break;
+
+                case 'sell':
+                    $quantity -= $trade->quantity;
+                    $totalCost -= $trade->quantity * $trade->price;
+
+                    break;
+
+                case 'dividend':
+                    // Dividend doesn't affect holdings
+                    break;
+
+                case 'stock_split':
+                    $ratio = (float) ($trade->split_ratio ?? 1);
+                    if ($ratio > 0) {
+                        $quantity = $quantity * $ratio;
+                    }
+
+                    break;
+
+                case 'stock_dividend':
+                    $ratio = (float) ($trade->split_ratio ?? 0);
+                    if ($ratio > 0) {
+                        $additionalShares = $quantity * $ratio;
+                        $quantity += $additionalShares;
+                    }
+
+                    break;
             }
         }
 

@@ -20,7 +20,7 @@ class SaveTradesToolTest extends TestCase
             'trades' => [
                 [
                     'code' => '600036',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 100,
                     'price' => '10.5',
                     'time' => '2026-01-01 13:22:22',
@@ -35,7 +35,7 @@ class SaveTradesToolTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('trades', [
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 100,
             'price' => '10.5',
         ]);
@@ -49,14 +49,14 @@ class SaveTradesToolTest extends TestCase
             'trades' => [
                 [
                     'code' => '600036',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 100,
                     'price' => '10.5',
                     'time' => '2026-01-01 13:22:22',
                 ],
                 [
                     'code' => '600036',
-                    'side' => 'sell',
+                    'type' => 'sell',
                     'quantity' => 50,
                     'price' => '11.0',
                     'time' => '2026-01-02 14:30:00',
@@ -78,7 +78,7 @@ class SaveTradesToolTest extends TestCase
             'trades' => [
                 [
                     'code' => 'AAPL',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 10,
                     'price' => '150.00',
                     'time' => '2026-01-01 10:00:00',
@@ -103,7 +103,7 @@ class SaveTradesToolTest extends TestCase
             'trades' => [
                 [
                     'code' => '600036',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 100,
                     'price' => '10.5',
                     'time' => '2026-01-01 13:22:22',
@@ -128,7 +128,7 @@ class SaveTradesToolTest extends TestCase
             'trades' => [
                 [
                     'code' => '600036',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 100,
                     'price' => '10.5',
                     'time' => '2026-01-01 13:22:22',
@@ -151,13 +151,13 @@ class SaveTradesToolTest extends TestCase
         $response->assertHasErrors();
     }
 
-    public function test_validation_fails_for_invalid_side(): void
+    public function test_validation_fails_for_invalid_type(): void
     {
         $response = GridTradingServer::tool(SaveTradesTool::class, [
             'trades' => [
                 [
                     'code' => '600036',
-                    'side' => 'invalid',
+                    'type' => 'invalid',
                     'quantity' => 100,
                     'price' => '10.5',
                     'time' => '2026-01-01 13:22:22',
@@ -174,7 +174,7 @@ class SaveTradesToolTest extends TestCase
             'trades' => [
                 [
                     'code' => '600036',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => -10,
                     'price' => '10.5',
                     'time' => '2026-01-01 13:22:22',
@@ -191,7 +191,7 @@ class SaveTradesToolTest extends TestCase
             'trades' => [
                 [
                     'code' => '600036',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 100,
                     'price' => '10.5',
                     'time' => '2026-01-01 13:22:22',
@@ -209,14 +209,14 @@ class SaveTradesToolTest extends TestCase
             'trades' => [
                 [
                     'code' => '600036',
-                    'side' => 'buy',
+                    'type' => 'buy',
                     'quantity' => 100,
                     'price' => '10.5',
                     'time' => '2026-01-01 13:22:22',
                 ],
                 [
                     'code' => '600037',
-                    'side' => 'sell',
+                    'type' => 'sell',
                     'quantity' => 50,
                     'price' => '20.0',
                     'time' => '2026-01-02 10:00:00',

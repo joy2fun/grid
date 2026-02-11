@@ -18,7 +18,7 @@ class TradeFactory extends Factory
     {
         return [
             'stock_id' => \App\Models\Stock::factory(),
-            'side' => fake()->randomElement(['buy', 'sell']),
+            'type' => fake()->randomElement(['buy', 'sell']),
             'price' => fake()->randomFloat(2, 10, 100),
             'quantity' => fake()->numberBetween(100, 1000),
             'executed_at' => now(),

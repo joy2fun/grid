@@ -162,10 +162,18 @@ class ManageTrades extends ManageRecords
                                                 ->weight('medium')
                                                 ->color('primary'),
                                             TextEntry::make('name'),
-                                            TextEntry::make('side')
-                                                ->formatStateUsing(fn ($state) => strtoupper($state ?? '-'))
+                                            TextEntry::make('type')
+                                                ->formatStateUsing(function ($state, $record) {
+                                                    $type = $state ?? ($record['side'] ?? '-');
+
+                                                    return strtoupper($type);
+                                                })
                                                 ->badge()
-                                                ->color(fn ($state) => strtoupper($state ?? '') === 'BUY' ? 'danger' : 'success'),
+                                                ->color(function ($state, $record) {
+                                                    $type = strtoupper($state ?? ($record['side'] ?? ''));
+
+                                                    return $type === 'BUY' ? 'danger' : 'success';
+                                                }),
                                             TextEntry::make('quantity')
                                                 ->weight('medium'),
                                             TextEntry::make('price')
@@ -225,12 +233,15 @@ class ManageTrades extends ManageRecords
                             foreach ($jsonData['trades'] as $index => $tradeData) {
                                 $code = $tradeData['code'] ?? $data['fallback_code'] ?? null;
 
+                                // Support both old 'side' and new 'type' fields for backward compatibility
+                                $type = $tradeData['type'] ?? $tradeData['side'] ?? null;
+
                                 // Validate required fields
                                 if (
                                     ! $code || ! isset($tradeData['quantity']) ||
-                                    ! isset($tradeData['price']) || ! isset($tradeData['time']) || ! isset($tradeData['side'])
+                                    ! isset($tradeData['price']) || ! isset($tradeData['time']) || ! $type
                                 ) {
-                                    $errors[] = 'Trade #'.($index + 1).': Missing required fields (code, quantity, price, time, side)';
+                                    $errors[] = 'Trade #'.($index + 1).': Missing required fields (code, quantity, price, time, type)';
 
                                     continue;
                                 }
@@ -255,11 +266,10 @@ class ManageTrades extends ManageRecords
                                     continue;
                                 }
 
-                                // Create trade with grid_id as null
                                 Trade::create([
                                     'grid_id' => null,
                                     'stock_id' => $stock->id,
-                                    'side' => $tradeData['side'],
+                                    'type' => $type,
                                     'quantity' => (int) $tradeData['quantity'],
                                     'price' => (float) $tradeData['price'],
                                     'executed_at' => $tradeData['time'],
@@ -346,9 +356,10 @@ class ManageTrades extends ManageRecords
                                     'id' => $trade->id,
                                     'stock_code' => $trade->stock->code,
                                     'stock_name' => $trade->stock->name,
-                                    'side' => $trade->side,
+                                    'type' => $trade->type,
                                     'quantity' => $trade->quantity,
                                     'price' => $trade->price,
+                                    'split_ratio' => $trade->split_ratio,
                                     'executed_at' => $trade->executed_at->toIso8601String(),
                                     'created_at' => $trade->created_at->toIso8601String(),
                                     'updated_at' => $trade->updated_at->toIso8601String(),
@@ -446,12 +457,15 @@ class ManageTrades extends ManageRecords
                             foreach ($backupData['trades'] as $index => $tradeData) {
                                 $code = $tradeData['stock_code'] ?? null;
 
+                                // Support both old 'side' and new 'type' fields for backward compatibility
+                                $type = $tradeData['type'] ?? $tradeData['side'] ?? null;
+
                                 // Validate required fields
                                 if (
                                     ! $code || ! isset($tradeData['quantity']) ||
-                                    ! isset($tradeData['price']) || ! isset($tradeData['executed_at']) || ! isset($tradeData['side'])
+                                    ! isset($tradeData['price']) || ! isset($tradeData['executed_at']) || ! $type
                                 ) {
-                                    $errors[] = 'Trade #'.($index + 1).': Missing required fields (stock_code, quantity, price, executed_at, side)';
+                                    $errors[] = 'Trade #'.($index + 1).': Missing required fields (stock_code, quantity, price, executed_at, type)';
 
                                     continue;
                                 }
@@ -468,9 +482,10 @@ class ManageTrades extends ManageRecords
                                 // Parse the executed_at datetime to ensure proper comparison
                                 $executedAt = \Carbon\Carbon::parse($tradeData['executed_at']);
 
-                                // Check for duplicates (same time and stock_id)
+                                // Check for duplicates (same time, stock_id, and type)
                                 $exists = Trade::where('stock_id', $stock->id)
                                     ->where('executed_at', $executedAt)
+                                    ->where('type', $type)
                                     ->exists();
 
                                 if ($exists) {
@@ -483,9 +498,10 @@ class ManageTrades extends ManageRecords
                                 Trade::create([
                                     'grid_id' => null,
                                     'stock_id' => $stock->id,
-                                    'side' => $tradeData['side'],
+                                    'type' => $type,
                                     'quantity' => (int) $tradeData['quantity'],
                                     'price' => (float) $tradeData['price'],
+                                    'split_ratio' => $tradeData['split_ratio'] ?? null,
                                     'executed_at' => $executedAt,
                                 ]);
 

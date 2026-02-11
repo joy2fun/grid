@@ -35,7 +35,7 @@ class ImportTradeImageJobTest extends TestCase
                     'quantity' => 100,
                     'price' => 10.5,
                     'time' => '2026-01-01 09:30:00',
-                    'side' => 'buy',
+                    'type' => 'buy',
                 ],
             ],
         ];
@@ -53,7 +53,7 @@ class ImportTradeImageJobTest extends TestCase
         $this->assertDatabaseHas('trades', [
             'quantity' => 100,
             'price' => 10.5,
-            'side' => 'buy',
+            'type' => 'buy',
             'executed_at' => '2026-01-01 09:30:00',
         ]);
     }
@@ -67,7 +67,7 @@ class ImportTradeImageJobTest extends TestCase
         $stock = Stock::create(['code' => 'sh601166', 'name' => '兴业银行']);
         Trade::create([
             'stock_id' => $stock->id,
-            'side' => 'buy',
+            'type' => 'buy',
             'quantity' => 100,
             'price' => 10.5,
             'executed_at' => '2026-01-01 09:30:00',
@@ -85,7 +85,7 @@ class ImportTradeImageJobTest extends TestCase
                     'quantity' => 100,
                     'price' => 10.5,
                     'time' => '2026-01-01 09:30:00',
-                    'side' => 'buy',
+                    'type' => 'buy',
                 ],
             ],
         ];

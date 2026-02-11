@@ -15,15 +15,61 @@ class Trade extends Model
     protected $fillable = [
         'grid_id',
         'stock_id',
-        'side',
+        'type',
         'price',
         'quantity',
+        'split_ratio',
         'executed_at',
     ];
 
-    protected $casts = [
-        'executed_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'executed_at' => 'datetime',
+            'price' => 'decimal:4',
+            'split_ratio' => 'decimal:4',
+        ];
+    }
+
+    /**
+     * Check if this is a buy trade
+     */
+    public function isBuy(): bool
+    {
+        return $this->type === 'buy';
+    }
+
+    /**
+     * Check if this is a sell trade
+     */
+    public function isSell(): bool
+    {
+        return $this->type === 'sell';
+    }
+
+    /**
+     * Check if this is a dividend record
+     */
+    public function isDividend(): bool
+    {
+        return $this->type === 'dividend';
+    }
+
+    /**
+     * Check if this is a stock split
+     */
+    public function isStockSplit(): bool
+    {
+        return $this->type === 'stock_split';
+    }
+
+    /**
+     * Check if this is a stock dividend (送股/转增)
+     */
+    public function isStockDividend(): bool
+    {
+        return $this->type === 'stock_dividend';
+    }
 
     public function grid()
     {
@@ -42,8 +88,12 @@ class Trade extends Model
      */
     public function getPriceChangePercentageAttribute(): ?float
     {
+        if (! $this->isBuy() && ! $this->isSell()) {
+            return null;
+        }
+
         $currentPrice = $this->stock->current_price;
-        if ($currentPrice === null || $this->price === 0) {
+        if ($currentPrice === null || $this->price == 0) {
             return null;
         }
 
@@ -57,6 +107,10 @@ class Trade extends Model
      */
     public function getPriceChangeAttribute(): ?float
     {
+        if (! $this->isBuy() && ! $this->isSell()) {
+            return null;
+        }
+
         $currentPrice = $this->stock->current_price;
         if ($currentPrice === null) {
             return null;
