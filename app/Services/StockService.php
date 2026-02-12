@@ -92,6 +92,9 @@ class StockService
                 $stock->update(['peak_value' => $newPeak]);
             }
 
+            // Recalculate XIRR if price changed (affects holding valuation)
+            $this->recalculateXirrIfNeeded($stock);
+
             return ['success' => true, 'processed_count' => $processedCount];
         } catch (\Exception $e) {
             Log::error("Error syncing stock prices for {$stockCode}", [
@@ -184,7 +187,36 @@ class StockService
         // Update stocks with current_price and potentially peak_value
         foreach ($stockUpdates as $stockId => $updates) {
             Stock::where('id', $stockId)->update($updates);
+
+            // Recalculate XIRR for stocks with price updates
+            $stock = Stock::find($stockId);
+            if ($stock) {
+                $this->recalculateXirrIfNeeded($stock);
+            }
         }
+    }
+
+    /**
+     * Recalculate XIRR for a stock if it has holdings
+     * XIRR depends on current_price for the final holding valuation
+     */
+    private function recalculateXirrIfNeeded(Stock $stock): void
+    {
+        // Only recalculate for non-index stocks with trades
+        if ($stock->type === 'index') {
+            return;
+        }
+
+        $hasTrades = $stock->trades()
+            ->whereIn('type', ['buy', 'sell'])
+            ->exists();
+
+        if (! $hasTrades) {
+            return;
+        }
+
+        $xirr = $stock->calculateXirr();
+        $stock->update(['xirr' => $xirr ?? 0]);
     }
 
     /**

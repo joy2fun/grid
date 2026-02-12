@@ -31,21 +31,15 @@ class PriceChangeStocksTable extends TableWidget
 
         return Stock::query()
             ->where('type', '!=', 'index')
-            ->whereHas('trades', function ($query) {
-                $query->whereIn('type', ['buy', 'sell']);
-            })
-            ->with(['trades' => function ($query) {
-                $query->whereIn('type', ['buy', 'sell'])->latest('executed_at');
-            }])
+            ->whereNotNull('last_trade_price')
             ->whereNotNull('current_price')
             ->get()
             ->filter(function (Stock $stock) use ($threshold) {
-                $lastTrade = $stock->trades->first();
-                if (! $lastTrade || $lastTrade->price === 0) {
+                if ($stock->last_trade_price == 0) {
                     return false;
                 }
 
-                $priceChangePercentage = (($stock->current_price - $lastTrade->price) / $lastTrade->price) * 100;
+                $priceChangePercentage = (($stock->current_price - $stock->last_trade_price) / $stock->last_trade_price) * 100;
 
                 return abs($priceChangePercentage) >= $threshold;
             });
@@ -53,16 +47,13 @@ class PriceChangeStocksTable extends TableWidget
 
     public function table(Table $table): Table
     {
-        // ... (threshold logic if needed, but we call getPriceChangeStocks)
-
         $stocks = static::getPriceChangeStocks()
             ->sortByDesc(function (Stock $stock) {
-                $lastTrade = $stock->trades->first();
-                if (! $lastTrade || $lastTrade->price === 0) {
+                if ($stock->last_trade_price == 0) {
                     return 0;
                 }
 
-                return abs((($stock->current_price - $lastTrade->price) / $lastTrade->price) * 100);
+                return abs((($stock->current_price - $stock->last_trade_price) / $stock->last_trade_price) * 100);
             })
             ->values();
 
@@ -98,20 +89,17 @@ class PriceChangeStocksTable extends TableWidget
                     ])),
                 TextColumn::make('current_price')
                     ->label(__('app.widgets.current')),
-                TextColumn::make('lastTradePrice')
+                TextColumn::make('last_trade_price')
                     ->label(__('app.stock.last_trade'))
-                    ->getStateUsing(function (Stock $record): ?float {
-                        return $record->trades->first()?->price;
-                    }),
+                    ->numeric(decimalPlaces: 3),
                 TextColumn::make('priceChange')
                     ->label(__('app.widgets.change_percentage'))
                     ->getStateUsing(function (Stock $record): ?float {
-                        $lastTrade = $record->trades->first();
-                        if (! $lastTrade || ! $record->current_price || $lastTrade->price === 0) {
+                        if (! $record->last_trade_price || ! $record->current_price || $record->last_trade_price == 0) {
                             return null;
                         }
 
-                        return (($record->current_price - $lastTrade->price) / $lastTrade->price) * 100;
+                        return (($record->current_price - $record->last_trade_price) / $record->last_trade_price) * 100;
                     })
                     ->formatStateUsing(fn (?float $state): string => $state !== null ? number_format($state, 2).'%' : 'N/A')
                     ->color(fn (?float $state): string => match (true) {
@@ -120,16 +108,15 @@ class PriceChangeStocksTable extends TableWidget
                         $state < 0 => 'danger',
                         default => 'gray',
                     })
-                    ->weight('bold'),  // Removed sortable() as it requires complex SQL
+                    ->weight('bold'),
                 TextColumn::make('daysSinceTrade')
                     ->label(__('app.widgets.days_since'))
                     ->getStateUsing(function (Stock $record): int {
-                        $lastTrade = $record->trades->first();
-                        if (! $lastTrade) {
+                        if (! $record->last_trade_at) {
                             return 0;
                         }
 
-                        return $lastTrade->executed_at->diffInDays();
+                        return $record->last_trade_at->diffInDays();
                     })
                     ->suffix(' '.__('app.widgets.days'))
                     ->sortable(),

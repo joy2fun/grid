@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Holding;
+use App\Models\Stock;
 use App\Models\Trade;
 
 class TradeObserver
@@ -10,20 +11,28 @@ class TradeObserver
     public function created(Trade $trade): void
     {
         $this->recalculateHolding($trade->stock_id);
+        $this->updateLastTradeAt($trade->stock_id);
     }
 
     public function updated(Trade $trade): void
     {
         $this->recalculateHolding($trade->stock_id);
+        $this->updateLastTradeAt($trade->stock_id);
 
         if ($trade->isDirty('stock_id')) {
             $this->recalculateHolding($trade->getOriginal('stock_id'));
+            $this->updateLastTradeAt($trade->getOriginal('stock_id'));
+        }
+
+        if ($trade->isDirty('type') || $trade->isDirty('executed_at')) {
+            $this->updateLastTradeAt($trade->stock_id);
         }
     }
 
     public function deleted(Trade $trade): void
     {
         $this->recalculateHolding($trade->stock_id);
+        $this->updateLastTradeAt($trade->stock_id);
     }
 
     protected function recalculateHolding(int $stockId): void
@@ -96,5 +105,26 @@ class TradeObserver
                 'average_cost' => $averageCost,
             ]
         );
+    }
+
+    protected function updateLastTradeAt(int $stockId): void
+    {
+        $lastTrade = Trade::where('stock_id', $stockId)
+            ->whereIn('type', ['buy', 'sell'])
+            ->latest('executed_at')
+            ->first();
+
+        $stock = Stock::find($stockId);
+        if (! $stock) {
+            return;
+        }
+
+        $xirr = $stock->calculateXirr();
+
+        Stock::where('id', $stockId)->update([
+            'last_trade_at' => $lastTrade?->executed_at,
+            'last_trade_price' => $lastTrade?->price,
+            'xirr' => $xirr ?? 0, // Cache 0 when XIRR is null (no valid calculation)
+        ]);
     }
 }

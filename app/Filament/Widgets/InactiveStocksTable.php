@@ -30,12 +30,7 @@ class InactiveStocksTable extends TableWidget
         $threshold = AppSetting::get('inactive_stocks_threshold', 30);
 
         return $table
-            ->query(
-                Stock::inactiveStocks()
-                    ->with(['trades' => function ($query) {
-                        $query->whereIn('type', ['buy', 'sell'])->latest('executed_at');
-                    }])
-            )
+            ->query(Stock::inactiveStocks())
             ->columns([
                 TextColumn::make('name')
                     ->label(__('app.stock.name'))
@@ -48,20 +43,17 @@ class InactiveStocksTable extends TableWidget
                     ])),
                 TextColumn::make('current_price')
                     ->label(__('app.widgets.current')),
-                TextColumn::make('lastTradePrice')
+                TextColumn::make('last_trade_price')
                     ->label(__('app.stock.last_trade'))
-                    ->getStateUsing(function (Stock $record): ?float {
-                        return $record->trades->first()?->price;
-                    }),
+                    ->numeric(decimalPlaces: 3),
                 TextColumn::make('priceChange')
                     ->label(__('app.widgets.change_percentage'))
                     ->getStateUsing(function (Stock $record): ?float {
-                        $lastTrade = $record->trades->first();
-                        if (! $lastTrade || ! $record->current_price || $lastTrade->price === 0) {
+                        if (! $record->last_trade_price || ! $record->current_price || $record->last_trade_price == 0) {
                             return null;
                         }
 
-                        return (($record->current_price - $lastTrade->price) / $lastTrade->price) * 100;
+                        return (($record->current_price - $record->last_trade_price) / $record->last_trade_price) * 100;
                     })
                     ->formatStateUsing(fn (?float $state): string => $state !== null ? number_format($state, 2).'%' : 'N/A')
                     ->color(fn (?float $state): string => match (true) {
@@ -74,12 +66,11 @@ class InactiveStocksTable extends TableWidget
                 TextColumn::make('daysInactive')
                     ->label(__('app.widgets.inactive_days'))
                     ->getStateUsing(function (Stock $record): int {
-                        $lastTrade = $record->trades->first();
-                        if (! $lastTrade) {
+                        if (! $record->last_trade_at) {
                             return 0;
                         }
 
-                        return $lastTrade->executed_at->diffInDays();
+                        return $record->last_trade_at->diffInDays();
                     })
                     ->suffix(' '.__('app.widgets.days'))
                     ->sortable(),

@@ -11,16 +11,12 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class StocksTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(function (Builder $query) {
-                return $query->with('trades');
-            })
             ->columns([
                 TextColumn::make('name')
                     ->label(__('app.stock.name'))
@@ -69,7 +65,10 @@ class StocksTable
                             ->hidden(fn (Stock $record) => $record->type !== 'etf')
                             ->action(function (Stock $record) {
                                 $cashFlows = [];
-                                $trades = $record->trades->sortBy('executed_at');
+                                $trades = $record->trades()
+                                    ->select('id', 'stock_id', 'type', 'price', 'quantity', 'split_ratio', 'executed_at')
+                                    ->orderBy('executed_at')
+                                    ->get();
 
                                 foreach ($trades as $trade) {
                                     $amount = (float) $trade->quantity * (float) $trade->price;
@@ -133,7 +132,7 @@ class StocksTable
                             })
                     ),
 
-                TextColumn::make('last_trade_at')
+                TextColumn::make('last_trade_at_formatted')
                     ->label(__('app.stock.last_trade'))
                     ->url(
                         fn (Stock $record): ?string => $record->type === 'etf'
@@ -162,7 +161,6 @@ class StocksTable
             ])
             ->modifyQueryUsing(fn ($query) => $query->with([
                 'dayPrices' => fn ($q) => $q->latest('date')->limit(2),
-                'trades' => fn ($q) => $q->select('id', 'stock_id', 'type', 'price', 'quantity', 'split_ratio', 'executed_at'),
                 'holding',
             ]))
             ->filters([
@@ -204,6 +202,13 @@ class StocksTable
                                 ->body('Failed to sync stock prices.')
                                 ->danger()
                                 ->send();
+                        }
+                    })
+                    ->after(function (Stock $record) {
+                        // Recalculate XIRR after price sync (current_price affects holding valuation)
+                        if ($record->type !== 'index') {
+                            $xirr = $record->calculateXirr();
+                            $record->update(['xirr' => $xirr ?? 0]);
                         }
                     }),
                 DeleteAction::make()->iconButton()->iconSize('sm'),
