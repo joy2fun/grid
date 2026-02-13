@@ -38,6 +38,12 @@
             style="width: 1.5rem; height: 1.5rem;"
         />
     </a>
+    <a href="{{ \App\Filament\Resources\Grids\GridResource::getUrl() }}" title="Grids">
+        <x-filament::icon
+            icon="heroicon-o-squares-2x2"
+            style="width: 1.5rem; height: 1.5rem;"
+        />
+    </a>
     <a href="{{ \App\Filament\Resources\PriceAlerts\PriceAlertResource::getUrl() }}" title="Alerts">
         <x-filament::icon
             icon="heroicon-o-bell"
@@ -50,9 +56,9 @@
             style="width: 1.5rem; height: 1.5rem;"
         />
     </a>
-    <a href="{{ \App\Filament\Resources\Trades\TradeResource::getUrl() }}" title="Trades">
+    <a href="{{ \App\Filament\Resources\Holdings\HoldingResource::getUrl() }}" title="Holdings">
         <x-filament::icon
-            icon="heroicon-o-rectangle-stack"
+            icon="heroicon-o-currency-dollar"
             style="width: 1.5rem; height: 1.5rem;"
         />
     </a>

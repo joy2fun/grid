@@ -16,7 +16,7 @@ class TradeResource extends Resource
 {
     protected static ?string $model = Trade::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
 
     public static function getNavigationLabel(): string
     {

@@ -21,7 +21,7 @@ class HoldingResource extends Resource
 {
     protected static ?string $model = Holding::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartBar;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCurrencyDollar;
 
     public static function getNavigationLabel(): string
     {
@@ -85,6 +85,7 @@ class HoldingResource extends Resource
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
                     ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state)
                     ->default('-')
+                    ->sortable()
                     ->action(
                         Action::make('exportXirrCashFlow')
                             ->label(__('app.actions.export_xirr_cashflow'))
@@ -172,6 +173,10 @@ class HoldingResource extends Resource
                     ->label(__('app.holding.current_qty'))
                     ->numeric(0)
                     ->sortable(),
+                TextColumn::make('stock.current_price')
+                    ->label(__('app.stock.current_price'))
+                    ->numeric(3)
+                    ->sortable(),
                 TextColumn::make('average_cost')
                     ->label(__('app.holding.avg_cost'))
                     ->numeric(3)
@@ -179,16 +184,6 @@ class HoldingResource extends Resource
                 TextColumn::make('total_cost')
                     ->label(__('app.holding.total_cost'))
                     ->numeric(0)
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('initial_quantity')
-                    ->label(__('app.holding.initial_quantity'))
-                    ->numeric(0)
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('initial_cost')
-                    ->label(__('app.holding.initial_cost'))
-                    ->numeric(3)
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('updated_at')

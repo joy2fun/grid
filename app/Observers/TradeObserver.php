@@ -65,8 +65,13 @@ class TradeObserver
                     break;
 
                 case 'dividend':
-                    // Dividend is cash flow, doesn't affect holdings quantity or cost
-                    // Total cost remains unchanged
+                    // Dividend is cash income that reduces the cost basis
+                    // The dividend amount reduces total cost as it's a return of capital
+                    $dividendAmount = (float) $trade->quantity * (float) $trade->price;
+                    if ($dividendAmount > 0) {
+                        $totalCost -= $dividendAmount;
+                    }
+
                     break;
 
                 case 'stock_split':
