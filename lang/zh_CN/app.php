@@ -219,6 +219,7 @@ return [
         'restore_completed' => '恢复完成',
         'restore_failed' => '恢复失败',
         'price_synced' => '价格已同步',
+        'full_sync_completed' => '全量同步完成',
         'test_sent' => '测试通知已发送',
         'invalid_json' => '无效的 JSON',
         'invalid_format' => '格式无效',
@@ -233,7 +234,13 @@ return [
         'price_chart' => '价格图表',
         'sync_price' => '同步价格',
         'sync_prices' => '同步价格',
+        'full_sync_price' => '全量同步',
         'index_chart' => '指数图表',
         'export_xirr_cashflow' => '导出 XIRR 现金流',
+    ],
+
+    // Messages
+    'messages' => [
+        'full_sync_confirmation' => '这将同步最多 10 年的历史价格数据。根据数据量大小，可能需要几分钟时间。',
     ],
 ];

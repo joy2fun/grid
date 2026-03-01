@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChartController;
 use App\Http\Controllers\SetupController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,3 +14,6 @@ Route::get('/login', function () {
 Route::any(env('ADMINNEO_ROUTE', '/ado'), function () {
     require '../adminneo.php';
 })->middleware('auth')->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+
+Route::get('/chart', [ChartController::class, 'index']);
+Route::get('/chart/data', [ChartController::class, 'data']);

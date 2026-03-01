@@ -234,6 +234,7 @@ return [
         'restore_completed' => 'Restore Completed',
         'restore_failed' => 'Restore Failed',
         'price_synced' => 'Price Synced',
+        'full_sync_completed' => 'Full Sync Completed',
         'test_sent' => 'Test notification sent',
         'invalid_json' => 'Invalid JSON',
         'invalid_format' => 'Invalid Format',
@@ -248,7 +249,13 @@ return [
         'price_chart' => 'Price Chart',
         'sync_price' => 'Sync Price',
         'sync_prices' => 'Sync Prices',
+        'full_sync_price' => 'Full Sync',
         'index_chart' => 'Index Chart',
         'export_xirr_cashflow' => 'Export XIRR Cash Flow',
+    ],
+
+    // Messages
+    'messages' => [
+        'full_sync_confirmation' => 'This will sync up to 10 years of historical price data. It may take several minutes depending on the amount of data.',
     ],
 ];

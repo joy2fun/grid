@@ -211,6 +211,36 @@ class StocksTable
                             $record->update(['xirr' => $xirr ?? 0]);
                         }
                     }),
+                Action::make('full_sync_price')
+                    ->label(__('app.actions.full_sync_price'))
+                    ->icon('heroicon-o-arrow-down-on-square-stack')
+                    ->requiresConfirmation()
+                    ->modalHeading(__('app.actions.full_sync_price'))
+                    ->modalDescription(__('app.messages.full_sync_confirmation'))
+                    ->action(function (Stock $record, \App\Services\StockService $stockService) {
+                        $result = $stockService->fullSyncStockPrices($record->code);
+
+                        if ($result['success']) {
+                            \Filament\Notifications\Notification::make()
+                                ->title(__('app.notifications.full_sync_completed'))
+                                ->body("Synced {$result['total_processed']} records in {$result['api_calls']} API calls.")
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title(__('app.notifications.import_failed'))
+                                ->body('Failed to sync stock prices.')
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->after(function (Stock $record) {
+                        // Recalculate XIRR after price sync (current_price affects holding valuation)
+                        if ($record->type !== 'index') {
+                            $xirr = $record->calculateXirr();
+                            $record->update(['xirr' => $xirr ?? 0]);
+                        }
+                    }),
                 DeleteAction::make()->iconButton()->iconSize('sm'),
             ])
             ->paginated([25, 50, 100])

@@ -13,12 +13,13 @@ class StockService
      * Sync stock prices by stock code from the provided API
      *
      * @param  string  $stockCode  The stock code (e.g., 'sh601166')
+     * @param  string  $endDate  The end date (format: YYYY-MM-DD)
      * @return array Result with success status and additional info like processed count
      */
-    public function syncPriceByStockCode(string $stockCode): array
+    public function syncPriceByStockCode(string $stockCode, $endDate = ''): array
     {
         // Construct the API URL, default to 2000 days of data
-        $url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={$stockCode},day,,,2000,qfq";
+        $url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={$stockCode},day,,{$endDate},2000,qfq";
 
         try {
             // Fetch data from the API
@@ -95,7 +96,15 @@ class StockService
             // Recalculate XIRR if price changed (affects holding valuation)
             $this->recalculateXirrIfNeeded($stock);
 
-            return ['success' => true, 'processed_count' => $processedCount];
+            // Get the earliest date from the fetched prices for pagination
+            $earliestDate = collect($dayPricesData)->min('date');
+
+            return [
+                'success' => true,
+                'processed_count' => $processedCount,
+                'earliest_date' => $earliestDate,
+                'total_fetched' => count($prices),
+            ];
         } catch (\Exception $e) {
             Log::error("Error syncing stock prices for {$stockCode}", [
                 'error' => $e->getMessage(),
@@ -268,5 +277,62 @@ class StockService
         }
 
         return 'Unknown';
+    }
+
+    /**
+     * Full sync stock prices by paginating through historical data
+     *
+     * @param  string  $stockCode  The stock code (e.g., 'sh601166')
+     * @return array Result with success status, total processed count, and sync details
+     */
+    public function fullSyncStockPrices(string $stockCode): array
+    {
+        $totalProcessed = 0;
+        $callCount = 0;
+        $endDate = '';
+        $tenYearsAgo = now()->subYears(10)->format('Y-m-d');
+
+        while ($callCount < 100) { // Safety limit to prevent infinite loops
+            $callCount++;
+
+            $result = $this->syncPriceByStockCode($stockCode, $endDate);
+
+            if (! $result['success']) {
+                Log::warning("Full sync failed for {$stockCode} at call {$callCount}", [
+                    'end_date' => $endDate,
+                ]);
+
+                break;
+            }
+
+            $totalProcessed += $result['processed_count'];
+
+            // Stop if we fetched less than 10 records (no more historical data)
+            if ($result['total_fetched'] < 10) {
+                break;
+            }
+
+            // Stop if we've reached 10 years ago
+            if ($result['earliest_date'] && $result['earliest_date'] <= $tenYearsAgo) {
+                break;
+            }
+
+            // Use the earliest date from this batch as the next endDate
+            if ($result['earliest_date']) {
+                $endDate = $result['earliest_date'];
+            } else {
+                break;
+            }
+
+            // Sleep 1 second between API calls to avoid rate limiting
+            sleep(1);
+        }
+
+        return [
+            'success' => true,
+            'total_processed' => $totalProcessed,
+            'api_calls' => $callCount,
+            'stock_code' => $stockCode,
+        ];
     }
 }
