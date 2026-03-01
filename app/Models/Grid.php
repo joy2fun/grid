@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Grid extends Model
 {
@@ -14,7 +15,19 @@ class Grid extends Model
         'name',
         'initial_amount',
         'grid_interval',
+        'last_trade_at',
+        'last_trade_price',
+        'xirr',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'last_trade_at' => 'datetime',
+            'last_trade_price' => 'decimal:4',
+            'xirr' => 'decimal:6',
+        ];
+    }
 
     public function stock()
     {
@@ -24,6 +37,56 @@ class Grid extends Model
     public function trades()
     {
         return $this->hasMany(Trade::class);
+    }
+
+    /**
+     * Get formatted last trade date (cached in database column)
+     * Formats the stored last_trade_at datetime as human readable
+     */
+    public function getLastTradeAtFormattedAttribute(): string
+    {
+        $value = $this->getAttributes()['last_trade_at'] ?? null;
+
+        return $value ? Carbon::parse($value)->diffForHumans() : '-';
+    }
+
+    /**
+     * Calculate the percentage change between last trade price and current stock price
+     *
+     * @return float|null The percentage change, or null if data is not available
+     */
+    public function getPriceChangePercentageAttribute(): ?float
+    {
+        $lastTradePrice = $this->getAttributes()['last_trade_price'] ?? null;
+        $currentPrice = $this->stock?->current_price;
+
+        if ($lastTradePrice === null || $currentPrice === null || $lastTradePrice == 0) {
+            return null;
+        }
+
+        return (($currentPrice - (float) $lastTradePrice) / (float) $lastTradePrice) * 100;
+    }
+
+    /**
+     * Get XIRR from cache or calculate if not cached
+     * Uses 0 as sentinel value in database to indicate "calculated but null"
+     */
+    public function getXirrAttribute(?float $value): ?float
+    {
+        // Return null for sentinel value 0 (no valid XIRR)
+        if ($value === 0.0 || $value === 0) {
+            return null;
+        }
+
+        // Return cached value if available
+        if ($value !== null) {
+            return $value;
+        }
+
+        // Calculate on-demand if not cached (during transition)
+        $metrics = $this->getMetrics();
+
+        return $metrics['xirr'] ?? null;
     }
 
     /**

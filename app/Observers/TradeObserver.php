@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Grid;
 use App\Models\Holding;
 use App\Models\Stock;
 use App\Models\Trade;
@@ -12,16 +13,22 @@ class TradeObserver
     {
         $this->recalculateHolding($trade->stock_id);
         $this->updateLastTradeAt($trade->stock_id);
+        $this->updateGridCache($trade->grid_id);
     }
 
     public function updated(Trade $trade): void
     {
         $this->recalculateHolding($trade->stock_id);
         $this->updateLastTradeAt($trade->stock_id);
+        $this->updateGridCache($trade->grid_id);
 
         if ($trade->isDirty('stock_id')) {
             $this->recalculateHolding($trade->getOriginal('stock_id'));
             $this->updateLastTradeAt($trade->getOriginal('stock_id'));
+        }
+
+        if ($trade->isDirty('grid_id')) {
+            $this->updateGridCache($trade->getOriginal('grid_id'));
         }
 
         if ($trade->isDirty('type') || $trade->isDirty('executed_at')) {
@@ -33,6 +40,7 @@ class TradeObserver
     {
         $this->recalculateHolding($trade->stock_id);
         $this->updateLastTradeAt($trade->stock_id);
+        $this->updateGridCache($trade->grid_id);
     }
 
     protected function recalculateHolding(int $stockId): void
@@ -130,6 +138,31 @@ class TradeObserver
             'last_trade_at' => $lastTrade?->executed_at,
             'last_trade_price' => $lastTrade?->price,
             'xirr' => $xirr ?? 0, // Cache 0 when XIRR is null (no valid calculation)
+        ]);
+    }
+
+    protected function updateGridCache(?int $gridId): void
+    {
+        if ($gridId === null) {
+            return;
+        }
+
+        $grid = Grid::find($gridId);
+        if (! $grid) {
+            return;
+        }
+
+        $lastTrade = Trade::where('grid_id', $gridId)
+            ->whereIn('type', ['buy', 'sell'])
+            ->latest('executed_at')
+            ->first();
+
+        $metrics = $grid->getMetrics();
+
+        $grid->update([
+            'last_trade_at' => $lastTrade?->executed_at,
+            'last_trade_price' => $lastTrade?->price,
+            'xirr' => $metrics['xirr'] ?? 0, // Cache 0 when XIRR is null (no valid calculation)
         ]);
     }
 }

@@ -79,6 +79,8 @@ return [
         'name' => '名称',
         'initial_amount' => '初始金额',
         'grid_interval' => '网格间隔',
+        'last_trade' => '最近交易',
+        'price_change' => '价格变化',
         'xirr' => '年化收益率 (XIRR)',
         'total_profit' => '总盈亏',
         'max_cash_required' => '最大占用资金',

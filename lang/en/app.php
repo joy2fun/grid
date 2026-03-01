@@ -94,6 +94,8 @@ return [
         'name' => 'Name',
         'initial_amount' => 'Initial Amount',
         'grid_interval' => 'Grid Interval',
+        'last_trade' => 'Last Trade',
+        'price_change' => 'Price Change',
         'xirr' => 'XIRR',
         'total_profit' => 'Total Profit/Loss',
         'max_cash_required' => 'Max Cash Required',
