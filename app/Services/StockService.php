@@ -206,7 +206,7 @@ class StockService
     }
 
     /**
-     * Recalculate XIRR for a stock if it has holdings
+     * Recalculate XIRR for a stock and its grids if it has trades
      * XIRR depends on current_price for the final holding valuation
      */
     private function recalculateXirrIfNeeded(Stock $stock): void
@@ -224,8 +224,27 @@ class StockService
             return;
         }
 
+        // Update stock XIRR
         $xirr = $stock->calculateXirr();
         $stock->update(['xirr' => $xirr ?? 0]);
+
+        // Update XIRR for all grids belonging to this stock
+        $this->updateGridXirrForStock($stock);
+    }
+
+    /**
+     * Update XIRR for all grids of a given stock
+     */
+    private function updateGridXirrForStock(Stock $stock): void
+    {
+        $grids = \App\Models\Grid::where('stock_id', $stock->id)
+            ->whereHas('trades', fn ($q) => $q->whereIn('type', ['buy', 'sell']))
+            ->get();
+
+        foreach ($grids as $grid) {
+            $metrics = $grid->getMetrics();
+            $grid->update(['xirr' => $metrics['xirr'] ?? 0]);
+        }
     }
 
     /**

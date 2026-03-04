@@ -203,13 +203,6 @@ class StocksTable
                                 ->danger()
                                 ->send();
                         }
-                    })
-                    ->after(function (Stock $record) {
-                        // Recalculate XIRR after price sync (current_price affects holding valuation)
-                        if ($record->type !== 'index') {
-                            $xirr = $record->calculateXirr();
-                            $record->update(['xirr' => $xirr ?? 0]);
-                        }
                     }),
                 Action::make('full_sync_price')
                     ->label(__('app.actions.full_sync_price'))
@@ -232,13 +225,6 @@ class StocksTable
                                 ->body('Failed to sync stock prices.')
                                 ->danger()
                                 ->send();
-                        }
-                    })
-                    ->after(function (Stock $record) {
-                        // Recalculate XIRR after price sync (current_price affects holding valuation)
-                        if ($record->type !== 'index') {
-                            $xirr = $record->calculateXirr();
-                            $record->update(['xirr' => $xirr ?? 0]);
                         }
                     }),
                 DeleteAction::make()->iconButton()->iconSize('sm'),
