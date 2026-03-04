@@ -2,11 +2,9 @@
 
 namespace App\Filament\Resources\Grids\RelationManagers;
 
+use App\Models\Trade;
 use Filament\Actions\AssociateAction;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DissociateAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -111,13 +109,24 @@ class TradesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                CreateAction::make(),
-                AssociateAction::make(),
+                AssociateAction::make()
+                    ->recordSelect(
+                        fn (\Filament\Forms\Components\Select $select) => $select
+                            ->options(
+                                fn () => Trade::query()
+                                    ->whereNull('grid_id')
+                                    ->where('stock_id', $this->getOwnerRecord()->stock_id)
+                                    ->get()
+                                    ->mapWithKeys(fn (Trade $trade) => [
+                                        $trade->id => "{$trade->type} - {$trade->executed_at->format('Y-m-d H:i')} - 价格:{$trade->price} 数量:{$trade->quantity}",
+                                    ])
+                            )
+                            ->searchable()
+                            ->preload()
+                    ),
             ])
             ->recordActions([
-                EditAction::make(),
                 DissociateAction::make(),
-                DeleteAction::make(),
             ]);
     }
 }

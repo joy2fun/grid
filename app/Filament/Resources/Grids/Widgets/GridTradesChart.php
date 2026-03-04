@@ -36,17 +36,31 @@ class GridTradesChart extends ApexChartWidget
         $grid = $this->record;
         $stockId = $grid->stock_id;
 
+        // Get earliest trade date
+        $earliestTrade = $grid->trades()
+            ->orderBy('executed_at')
+            ->first();
+        $earliestTradeDate = $earliestTrade?->executed_at;
+
+        // Default to 120 days ago
+        $defaultStartDate = now()->subDays(120);
+
+        // Determine chart start date: use earliest trade date if it's earlier than 120 days ago
+        $chartStartDate = $earliestTradeDate && $earliestTradeDate->lt($defaultStartDate)
+            ? $earliestTradeDate
+            : $defaultStartDate;
+
         $data = \App\Models\DayPrice::query()
             ->where('stock_id', $stockId)
+            ->where('date', '>=', $chartStartDate->toDateString())
             ->orderBy('date', 'desc')
-            ->limit(120)
             ->get()
             ->reverse() // Order chronologically for the chart
             ->values();
 
         $chartData = $data->map(function ($dayPrice) {
             return [
-                'x' => $dayPrice->date->toDateString(),
+                'x' => $dayPrice->date->format('Y-m-d'),
                 'y' => [
                     (float) $dayPrice->open_price,
                     (float) $dayPrice->high_price,
@@ -56,7 +70,7 @@ class GridTradesChart extends ApexChartWidget
             ];
         })->toArray();
 
-        $categories = $data->map(fn ($dayPrice) => $dayPrice->date->toDateString())->values()->toArray();
+        $categories = $data->map(fn ($dayPrice) => $dayPrice->date->format('m-d'))->values()->toArray();
 
         // Key data by date for easy lookup of close price
         $datesMap = $data->keyBy(fn ($item) => $item->date->toDateString());
@@ -156,19 +170,46 @@ class GridTradesChart extends ApexChartWidget
                 'categories' => $categories,
                 'tickAmount' => 10,
                 'labels' => [
-                    'rotate' => -45,
+                    'rotate' => 0,
                     'rotateAlways' => false,
-                    'hideOverlappingLabels' => true,
-                    'trim' => true,
+                    'hideOverlappingLabels' => false,
+                    'trim' => false,
                     'style' => [
-                        'fontSize' => '11px',
+                        'fontSize' => '9px',
                     ],
+                ],
+                'axisBorder' => [
+                    'show' => false,
+                ],
+                'axisTicks' => [
+                    'show' => false,
+                ],
+                'crosshairs' => [
+                    'show' => true,
+                    'position' => 'back',
+                    'stroke' => [
+                        'color' => '#b6b6b6',
+                        'width' => 1,
+                        'dashArray' => 3,
+                    ],
+                ],
+                'tooltip' => [
+                    'enabled' => true,
                 ],
             ],
             'yaxis' => [
-                'decimalsInFloat' => 3, // Use ApexCharts native formatting instead of JS function
+                'decimalsInFloat' => 3,
                 'tooltip' => [
                     'enabled' => true,
+                ],
+                'labels' => [
+                    'show' => false,
+                ],
+                'axisBorder' => [
+                    'show' => false,
+                ],
+                'axisTicks' => [
+                    'show' => false,
                 ],
             ],
             'tooltip' => [
