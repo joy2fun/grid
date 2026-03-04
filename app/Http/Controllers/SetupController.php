@@ -12,7 +12,7 @@ class SetupController extends Controller
     public function index()
     {
         if (User::count() > 0) {
-            return redirect('/admin');
+            return 'It works!';
         }
 
         return view('setup');
