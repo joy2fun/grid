@@ -118,8 +118,7 @@ class PriceChangeStocksTable extends TableWidget
 
                         return $record->last_trade_at->diffInDays();
                     })
-                    ->suffix(' '.__('app.widgets.days'))
-                    ->sortable(),
+                    ->suffix(' '.__('app.widgets.days')),
             ])
             ->paginated(false)
             ->emptyStateHeading(__('app.widgets.no_significant_changes'));

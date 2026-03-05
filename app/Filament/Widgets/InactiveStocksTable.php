@@ -61,8 +61,7 @@ class InactiveStocksTable extends TableWidget
                         $state > 0 => 'success',
                         $state < 0 => 'danger',
                         default => 'gray',
-                    })
-                    ->sortable(),
+                    }),
                 TextColumn::make('daysInactive')
                     ->label(__('app.widgets.inactive_days'))
                     ->getStateUsing(function (Stock $record): int {
@@ -72,8 +71,7 @@ class InactiveStocksTable extends TableWidget
 
                         return $record->last_trade_at->diffInDays();
                     })
-                    ->suffix(' '.__('app.widgets.days'))
-                    ->sortable(),
+                    ->suffix(' '.__('app.widgets.days')),
             ])
             ->defaultSort('daysInactive', 'desc')
             ->paginated(false)

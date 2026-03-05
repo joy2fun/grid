@@ -108,9 +108,10 @@ class MonthlyCashFlowChart extends ApexChartWidget
             'xaxis' => [
                 'categories' => $categories,
                 'labels' => [
-                    'rotate' => -45,
+                    'show' => false,
+                    'rotate' => 0,
                     'style' => [
-                        'fontSize' => '11px',
+                        'fontSize' => '9px',
                     ],
                 ],
             ],
@@ -120,6 +121,12 @@ class MonthlyCashFlowChart extends ApexChartWidget
                 ],
                 'title' => [
                     'text' => '',
+                ],
+            ],
+            'grid' => [
+                'padding' => [
+                    'left' => 0,
+                    'right' => 0,
                 ],
             ],
             'plotOptions' => [

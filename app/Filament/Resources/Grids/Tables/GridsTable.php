@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Grids\Tables;
 
 use App\Models\Grid;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -56,9 +55,7 @@ class GridsTable
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make(),
-            ])
+            ->paginated(false)
             ->defaultSort('id', 'desc');
     }
 }

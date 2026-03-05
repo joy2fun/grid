@@ -137,9 +137,10 @@ class StockPriceChart extends ApexChartWidget
                 'categories' => $categories,
                 'tickAmount' => 10,
                 'labels' => [
-                    'rotate' => -45,
+                    // 'show' => false,
+                    'rotate' => 0,
                     'style' => [
-                        'fontSize' => '11px',
+                        'fontSize' => '9px',
                     ],
                 ],
             ],

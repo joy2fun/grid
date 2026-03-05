@@ -6,9 +6,6 @@ use App\Filament\Resources\Holdings\Pages\ManageHoldings;
 use App\Filament\Resources\Trades\TradeResource;
 use App\Models\Holding;
 use BackedEnum;
-use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -20,6 +17,8 @@ use Filament\Tables\Table;
 class HoldingResource extends Resource
 {
     protected static ?string $model = Holding::class;
+
+    protected static ?bool $canCreate = false;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCurrencyDollar;
 
@@ -85,77 +84,7 @@ class HoldingResource extends Resource
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
                     ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state)
                     ->default('-')
-                    ->sortable()
-                    ->action(
-                        Action::make('exportXirrCashFlow')
-                            ->label(__('app.actions.export_xirr_cashflow'))
-                            ->icon('heroicon-o-arrow-down-tray')
-                            ->hidden(fn (Holding $record) => $record->stock->type !== 'etf')
-                            ->action(function (Holding $record) {
-                                $stock = $record->stock;
-                                $cashFlows = [];
-                                $trades = $stock->trades->sortBy('executed_at');
-
-                                foreach ($trades as $trade) {
-                                    $amount = (float) $trade->quantity * (float) $trade->price;
-                                    $cashFlow = match ($trade->type) {
-                                        'buy' => [
-                                            'date' => $trade->executed_at->toDateString(),
-                                            'amount' => -$amount,
-                                            'description' => 'Buy '.$trade->quantity.' @ '.$trade->price,
-                                        ],
-                                        'sell' => [
-                                            'date' => $trade->executed_at->toDateString(),
-                                            'amount' => $amount,
-                                            'description' => 'Sell '.$trade->quantity.' @ '.$trade->price,
-                                        ],
-                                        'dividend' => [
-                                            'date' => $trade->executed_at->toDateString(),
-                                            'amount' => $amount,
-                                            'description' => 'Dividend '.$trade->quantity.' shares @ '.$trade->price.'/share',
-                                        ],
-                                        'stock_dividend' => [
-                                            'date' => $trade->executed_at->toDateString(),
-                                            'amount' => 0,
-                                            'description' => 'Stock Dividend base='.$trade->quantity.' ratio='.($trade->split_ratio ?? $trade->price),
-                                        ],
-                                        'stock_split' => [
-                                            'date' => $trade->executed_at->toDateString(),
-                                            'amount' => 0,
-                                            'description' => 'Stock Split ratio='.($trade->split_ratio ?? $trade->price),
-                                        ],
-                                        default => [
-                                            'date' => $trade->executed_at->toDateString(),
-                                            'amount' => 0,
-                                            'description' => $trade->type.' '.$trade->quantity.' @ '.$trade->price,
-                                        ],
-                                    };
-                                    $cashFlows[] = $cashFlow;
-                                }
-
-                                if ($record->quantity > 0 && $stock->current_price) {
-                                    $holdingValue = (float) $record->quantity * (float) $stock->current_price;
-                                    $cashFlows[] = [
-                                        'date' => now()->toDateString(),
-                                        'amount' => $holdingValue,
-                                        'description' => 'Current holding value: '.$record->quantity.' shares @ '.$stock->current_price,
-                                    ];
-                                }
-
-                                $csvContent = "Date,Amount,Description\n";
-                                foreach ($cashFlows as $flow) {
-                                    $csvContent .= "{$flow['date']},{$flow['amount']},\"{$flow['description']}\"\n";
-                                }
-
-                                $filename = 'xirr_cashflow_'.$stock->code.'_'.now()->format('Ymd_His').'.csv';
-
-                                return response()->streamDownload(function () use ($csvContent) {
-                                    echo $csvContent;
-                                }, $filename, [
-                                    'Content-Type' => 'text/csv',
-                                ]);
-                            })
-                    ),
+                    ->sortable(),
                 TextColumn::make('stock.last_trade_at_formatted')
                     ->label(__('app.stock.last_trade'))
                     ->url(
@@ -194,10 +123,6 @@ class HoldingResource extends Resource
             ->paginated(false)
             ->filters([
                 //
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
             ]);
     }
 
