@@ -116,6 +116,7 @@ class TradesRelationManager extends RelationManager
                                 fn () => Trade::query()
                                     ->whereNull('grid_id')
                                     ->where('stock_id', $this->getOwnerRecord()->stock_id)
+                                    ->orderBy('executed_at', 'desc')
                                     ->get()
                                     ->mapWithKeys(fn (Trade $trade) => [
                                         $trade->id => "{$trade->type} - {$trade->executed_at->format('Y-m-d H:i')} - 价格:{$trade->price} 数量:{$trade->quantity}",
