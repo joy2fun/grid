@@ -89,7 +89,7 @@ class HoldingResource extends Resource
                     ->sortable()
                     ->summarize(
                         Summarizer::make('overall_xirr')
-                            ->label(__('app.portfolio.overall_xirr'))
+                            // ->label(__('app.portfolio.overall_xirr'))
                             ->using(fn (): string => PortfolioService::calculateOverallXirr() ?? '-')
                             ->formatStateUsing(fn ($state): string => is_numeric($state) ? number_format($state * 100, 2).'%' : $state)
                     ),

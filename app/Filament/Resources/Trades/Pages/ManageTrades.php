@@ -377,6 +377,95 @@ class ManageTrades extends ManageRecords
                             'Content-Type' => 'application/json',
                         ]);
                     }),
+                Action::make('exportXirrCashflow')
+                    ->label(__('app.actions.export_xirr_cashflow'))
+                    ->icon('heroicon-o-currency-dollar')
+                    ->color('primary')
+                    ->action(function () {
+                        $query = Trade::with('stock');
+
+                        // Apply table filters if present
+                        $filters = $this->tableFilters ?? [];
+
+                        // Filter by stock_id
+                        if (! empty($filters['stock_id']['value'])) {
+                            $query->where('stock_id', $filters['stock_id']['value']);
+                        }
+
+                        // Filter by type
+                        if (! empty($filters['type']['value'])) {
+                            $query->where('type', $filters['type']['value']);
+                        }
+
+                        // Filter by executed_at date range
+                        if (! empty($filters['executed_at']['executed_from'])) {
+                            $query->whereDate('executed_at', '>=', $filters['executed_at']['executed_from']);
+                        }
+                        if (! empty($filters['executed_at']['executed_until'])) {
+                            $query->whereDate('executed_at', '<=', $filters['executed_at']['executed_until']);
+                        }
+
+                        $trades = $query->orderBy('executed_at')->get();
+
+                        $csvData = [];
+                        $csvData[] = ['Date', 'Cashflow', 'Description']; // Header
+
+                        foreach ($trades as $trade) {
+                            $cashflow = match ($trade->type) {
+                                'buy' => -($trade->price * $trade->quantity),
+                                'sell' => $trade->price * $trade->quantity,
+                                'dividend' => $trade->price * $trade->quantity, // dividend per share * shares held
+                                default => 0,
+                            };
+
+                            if ($cashflow != 0) {
+                                $description = match ($trade->type) {
+                                    'buy' => "买入 {$trade->stock->name} ({$trade->stock->code}) x{$trade->quantity} @{$trade->price}",
+                                    'sell' => "卖出 {$trade->stock->name} ({$trade->stock->code}) x{$trade->quantity} @{$trade->price}",
+                                    'dividend' => "分红 {$trade->stock->name} ({$trade->stock->code})",
+                                    default => "{$trade->stock->name} ({$trade->stock->code})",
+                                };
+
+                                $csvData[] = [
+                                    $trade->executed_at->format('Y-m-d'),
+                                    $cashflow,
+                                    $description,
+                                ];
+                            }
+                        }
+
+                        // Add current holdings as final cashflow (current value)
+                        $holdingsQuery = \App\Models\Holding::with('stock');
+
+                        // Apply stock filter to holdings as well if present
+                        if (! empty($filters['stock_id']['value'])) {
+                            $holdingsQuery->where('stock_id', $filters['stock_id']['value']);
+                        }
+
+                        $holdings = $holdingsQuery->get();
+                        foreach ($holdings as $holding) {
+                            if ($holding->quantity > 0 && $holding->stock->current_price) {
+                                $currentValue = $holding->quantity * $holding->stock->current_price;
+                                $csvData[] = [
+                                    now()->format('Y-m-d'),
+                                    $currentValue,
+                                    "持仓市值 {$holding->stock->name} ({$holding->stock->code}) x{$holding->quantity} @{$holding->stock->current_price}",
+                                ];
+                            }
+                        }
+
+                        $filename = 'xirr-cashflow-'.now()->format('Y-m-d-His').'.csv';
+
+                        return response()->streamDownload(function () use ($csvData) {
+                            $output = fopen('php://output', 'w');
+                            foreach ($csvData as $row) {
+                                fputcsv($output, $row);
+                            }
+                            fclose($output);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv; charset=utf-8',
+                        ]);
+                    }),
                 Action::make('restore')
                     ->label(__('app.common.restore'))
                     ->icon('heroicon-o-arrow-up-tray')
