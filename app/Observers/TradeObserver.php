@@ -6,6 +6,7 @@ use App\Models\Grid;
 use App\Models\Holding;
 use App\Models\Stock;
 use App\Models\Trade;
+use App\Services\PortfolioService;
 
 class TradeObserver
 {
@@ -14,6 +15,7 @@ class TradeObserver
         $this->recalculateHolding($trade->stock_id);
         $this->updateLastTradeAt($trade->stock_id);
         $this->updateGridCache($trade->grid_id);
+        $this->clearPortfolioXirrCache();
     }
 
     public function updated(Trade $trade): void
@@ -34,6 +36,8 @@ class TradeObserver
         if ($trade->isDirty('type') || $trade->isDirty('executed_at')) {
             $this->updateLastTradeAt($trade->stock_id);
         }
+
+        $this->clearPortfolioXirrCache();
     }
 
     public function deleted(Trade $trade): void
@@ -41,6 +45,12 @@ class TradeObserver
         $this->recalculateHolding($trade->stock_id);
         $this->updateLastTradeAt($trade->stock_id);
         $this->updateGridCache($trade->grid_id);
+        $this->clearPortfolioXirrCache();
+    }
+
+    protected function clearPortfolioXirrCache(): void
+    {
+        PortfolioService::clearXirrCache();
     }
 
     protected function recalculateHolding(int $stockId): void

@@ -108,6 +108,12 @@ return [
         'avg_cost' => '平均成本',
     ],
 
+    // Portfolio
+    'portfolio' => [
+        'summary' => '投资组合汇总',
+        'overall_xirr' => '整体 XIRR',
+    ],
+
     // Price Alert
     'price_alert' => [
         'label' => '价格提醒',

@@ -5,12 +5,14 @@ namespace App\Filament\Resources\Holdings;
 use App\Filament\Resources\Holdings\Pages\ManageHoldings;
 use App\Filament\Resources\Trades\TradeResource;
 use App\Models\Holding;
+use App\Services\PortfolioService;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -84,7 +86,13 @@ class HoldingResource extends Resource
                     ->color(fn ($state) => $state >= 0 ? 'success' : 'danger')
                     ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state)
                     ->default('-')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(
+                        Summarizer::make('overall_xirr')
+                            ->label(__('app.portfolio.overall_xirr'))
+                            ->using(fn (): string => PortfolioService::calculateOverallXirr() ?? '-')
+                            ->formatStateUsing(fn ($state): string => is_numeric($state) ? number_format($state * 100, 2).'%' : $state)
+                    ),
                 TextColumn::make('stock.last_trade_at_formatted')
                     ->label(__('app.stock.last_trade'))
                     ->url(
@@ -123,7 +131,10 @@ class HoldingResource extends Resource
             ->paginated(false)
             ->filters([
                 //
-            ]);
+            ])
+            ->summaries(
+                pageCondition: false,
+            );
     }
 
     public static function getPages(): array

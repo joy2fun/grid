@@ -123,6 +123,12 @@ return [
         'avg_cost' => 'Avg Cost',
     ],
 
+    // Portfolio
+    'portfolio' => [
+        'summary' => 'Portfolio Summary',
+        'overall_xirr' => 'Overall XIRR',
+    ],
+
     // Price Alert
     'price_alert' => [
         'label' => 'Price Alert',

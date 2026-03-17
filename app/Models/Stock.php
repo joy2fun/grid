@@ -51,6 +51,11 @@ class Stock extends Model
         return $this->hasOne(Holding::class);
     }
 
+    public function holdings()
+    {
+        return $this->hasMany(Holding::class);
+    }
+
     public function trades()
     {
         return $this->hasMany(Trade::class);
