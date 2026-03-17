@@ -14,23 +14,36 @@ class SyncRealtimePrices extends Command
      *
      * @var string
      */
-    protected $signature = 'app:sync-realtime-prices';
+    protected $signature = 'app:sync-realtime-prices {type? : The type of stocks to sync (etf|index)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Sync realtime stock prices for all stocks';
+    protected $description = 'Sync realtime stock prices for stocks';
 
     /**
      * Execute the console command.
      */
     public function handle(StockService $stockService): int
     {
-        $this->info('Starting realtime price sync...');
+        $type = $this->argument('type');
 
-        $stocks = Stock::all();
+        if ($type) {
+            $this->info("Starting realtime price sync for type: {$type}...");
+            $stocks = Stock::where('type', $type)->get();
+        } else {
+            $this->info('Starting realtime price sync for all stocks...');
+            $stocks = Stock::all();
+        }
+
+        if ($stocks->isEmpty()) {
+            $this->warn('No stocks found to sync.');
+
+            return 0;
+        }
+
         $codes = $stocks->pluck('code')->toArray();
 
         // GTimg API supports multiple codes in one request, chunking to avoid URL length limits

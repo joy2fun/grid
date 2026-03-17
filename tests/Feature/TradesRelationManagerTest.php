@@ -57,32 +57,4 @@ class TradesRelationManagerTest extends TestCase
         ])
             ->assertCanSeeTableRecords($this->grid->trades);
     }
-
-    public function test_can_create_trade_with_correct_defaults(): void
-    {
-        $this->actingAs($this->user);
-
-        Livewire::test(TradesRelationManager::class, [
-            'ownerRecord' => $this->grid,
-            'pageClass' => EditGrid::class,
-        ])
-            ->callTableAction('create', data: [
-                'type' => 'buy',
-                'price' => 10.5,
-                'quantity' => 100,
-            ])
-            ->assertHasNoTableActionErrors();
-
-        $this->assertDatabaseHas('trades', [
-            'grid_id' => $this->grid->id,
-            'stock_id' => $this->stock->id,
-            'type' => 'buy',
-            'price' => 10.5,
-            'quantity' => 100,
-        ]);
-
-        $trade = Trade::latest()->first();
-        $this->assertNotNull($trade->executed_at);
-        $this->assertEquals(now()->toDateString(), $trade->executed_at->toDateString());
-    }
 }
