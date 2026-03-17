@@ -60,6 +60,10 @@ class TradesTable
                     })
                     ->numeric(0)
                     ->sortable(),
+                TextColumn::make('notes')
+                    ->label(__('app.trade.notes'))
+                    ->limit(30)
+                    ->tooltip(fn ($record) => $record->notes),
                 TextColumn::make('split_ratio')
                     ->label(__('app.trade.split_ratio'))
                     ->numeric(4)

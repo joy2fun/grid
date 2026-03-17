@@ -360,6 +360,7 @@ class ManageTrades extends ManageRecords
                                     'quantity' => $trade->quantity,
                                     'price' => $trade->price,
                                     'split_ratio' => $trade->split_ratio,
+                                    'notes' => $trade->notes,
                                     'executed_at' => $trade->executed_at->toIso8601String(),
                                     'created_at' => $trade->created_at->toIso8601String(),
                                     'updated_at' => $trade->updated_at->toIso8601String(),
@@ -502,6 +503,7 @@ class ManageTrades extends ManageRecords
                                     'quantity' => (int) $tradeData['quantity'],
                                     'price' => (float) $tradeData['price'],
                                     'split_ratio' => $tradeData['split_ratio'] ?? null,
+                                    'notes' => $tradeData['notes'] ?? null,
                                     'executed_at' => $executedAt,
                                 ]);
 

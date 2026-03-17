@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Trades\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -69,6 +70,11 @@ class TradeForm
                 DateTimePicker::make('executed_at')
                     ->label(__('app.trade.executed_at'))
                     ->required(),
+                Textarea::make('notes')
+                    ->label(__('app.trade.notes'))
+                    ->placeholder(__('app.trade.notes_placeholder'))
+                    ->rows(3)
+                    ->columnSpanFull(),
             ]);
     }
 }

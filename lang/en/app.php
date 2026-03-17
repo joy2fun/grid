@@ -80,6 +80,8 @@ return [
         'stock_split_suffix' => '(e.g., 2 = 1:2 split)',
         'stock_dividend_helper' => 'Enter the ratio of bonus shares. E.g., 0.3 means 10送3 (30% bonus)',
         'stock_split_helper' => 'Enter the split ratio. E.g., 2 means 1 share becomes 2, 0.5 means 2 shares become 1',
+        'notes' => 'Notes',
+        'notes_placeholder' => 'Enter trade notes (optional)',
         'executed_at' => 'Executed At',
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',

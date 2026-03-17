@@ -19,6 +19,7 @@ class Trade extends Model
         'price',
         'quantity',
         'split_ratio',
+        'notes',
         'executed_at',
     ];
 
