@@ -106,14 +106,23 @@ class HoldingResource extends Resource
                             ])
                             : null
                     ),
-                TextColumn::make('quantity')
-                    ->label(__('app.holding.current_qty'))
-                    ->numeric(0)
-                    ->sortable(),
                 TextColumn::make('stock.current_price')
                     ->label(__('app.stock.current_price'))
                     ->numeric(3)
                     ->sortable(),
+                TextColumn::make('stock.peak_percentage')
+                    ->label(__('app.table.peak_percentage'))
+                    ->getStateUsing(function (Holding $record) {
+                        if (! $record->stock->current_price || ! $record->stock->peak_value || $record->stock->peak_value <= 0) {
+                            return null;
+                        }
+
+                        return ($record->stock->current_price / $record->stock->peak_value) * 100;
+                    })
+                    ->toggleable()
+                    ->badge()
+                    ->color(fn ($state) => $state >= 80 ? 'success' : ($state >= 50 ? 'warning' : 'danger'))
+                    ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format($state, 2).'%' : $state),
                 TextColumn::make('average_cost')
                     ->label(__('app.holding.avg_cost'))
                     ->numeric(3)
@@ -123,10 +132,10 @@ class HoldingResource extends Resource
                     ->numeric(0)
                     ->sortable()
                     ->toggleable(),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('quantity')
+                    ->label(__('app.holding.current_qty'))
+                    ->numeric(0)
+                    ->sortable(),
             ])
             ->paginated(false)
             ->filters([

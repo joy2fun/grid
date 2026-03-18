@@ -22,7 +22,8 @@ class TradesTable
                     ->sortable()
                     ->action(function ($record, $livewire) {
                         $livewire->tableFilters['stock_id']['value'] = $record->stock_id;
-                    }),
+                    })
+                    ->searchable(),
                 TextColumn::make('type')
                     ->label(__('app.trade.type'))
                     ->badge()
@@ -63,6 +64,7 @@ class TradesTable
                 TextColumn::make('notes')
                     ->label(__('app.trade.notes'))
                     ->limit(30)
+                    ->searchable()
                     ->tooltip(fn ($record) => $record->notes),
                 TextColumn::make('split_ratio')
                     ->label(__('app.trade.split_ratio'))
