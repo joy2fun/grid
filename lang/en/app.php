@@ -9,6 +9,7 @@ return [
         'holdings' => 'Holdings',
         'price_alerts' => 'Price Alerts',
         'index_chart' => 'Index Chart',
+        'cash_flows' => 'Cash Flows',
     ],
 
     // Common
@@ -127,6 +128,30 @@ return [
     'portfolio' => [
         'summary' => 'Portfolio Summary',
         'overall_xirr' => 'Overall XIRR',
+    ],
+
+    // Cash Flow
+    'cash_flow' => [
+        'label' => 'Cash Flow',
+        'date' => 'Date',
+        'amount' => 'Amount',
+        'amount_helper' => 'Negative for outflow (investment), positive for inflow (returns)',
+        'notes' => 'Notes',
+        'from' => 'From',
+        'until' => 'Until',
+        'created_at' => 'Created At',
+        'import_csv' => 'Import CSV',
+        'csv_file' => 'CSV File',
+        'csv_helper' => 'CSV must contain "date" and "amount" columns. "notes" column is optional.',
+        'imported_count' => 'Imported :count records.',
+        'skipped_count' => 'Skipped :count rows.',
+        'calculate_xirr' => 'Calculate XIRR',
+        'portfolio_value' => 'Current Portfolio Value',
+        'portfolio_value_helper' => 'Enter the current total portfolio value as the final cash-in flow',
+        'no_cash_flows' => 'No cash flow records found.',
+        'xirr_result' => 'XIRR Calculation Result',
+        'xirr_failed' => 'XIRR Calculation Failed',
+        'xirr_failed_body' => 'Could not calculate XIRR. Ensure you have both inflows and outflows with different dates.',
     ],
 
     // Price Alert

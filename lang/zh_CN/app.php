@@ -9,6 +9,7 @@ return [
         'holdings' => '持仓',
         'price_alerts' => '价格提醒',
         'index_chart' => '指数图表',
+        'cash_flows' => '现金流',
     ],
 
     // Common
@@ -112,6 +113,30 @@ return [
     'portfolio' => [
         'summary' => '投资组合汇总',
         'overall_xirr' => '整体 XIRR',
+    ],
+
+    // Cash Flow
+    'cash_flow' => [
+        'label' => '现金流',
+        'date' => '日期',
+        'amount' => '金额',
+        'amount_helper' => '负数表示支出（投资），正数表示收入（回报）',
+        'notes' => '备注',
+        'from' => '从',
+        'until' => '至',
+        'created_at' => '创建时间',
+        'import_csv' => '导入 CSV',
+        'csv_file' => 'CSV 文件',
+        'csv_helper' => 'CSV 文件必须包含 "date" 和 "amount" 列。"notes" 列可选。',
+        'imported_count' => '已导入 :count 条记录。',
+        'skipped_count' => '跳过 :count 行。',
+        'calculate_xirr' => '计算 XIRR',
+        'portfolio_value' => '当前投资组合价值',
+        'portfolio_value_helper' => '输入当前投资组合总价值作为最终现金流入',
+        'no_cash_flows' => '未找到现金流记录。',
+        'xirr_result' => 'XIRR 计算结果',
+        'xirr_failed' => 'XIRR 计算失败',
+        'xirr_failed_body' => '无法计算 XIRR。请确保有不同日期的现金流入和流出记录。',
     ],
 
     // Price Alert
