@@ -13,8 +13,8 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -128,10 +128,37 @@ class ManageTrades extends ManageRecords
                                         }
                                     })
                             ),
-                        TextInput::make('fallback_code')
+                        Select::make('fallback_code')
                             ->label(__('app.import_export.fallback_code'))
-                            ->placeholder(__('app.import_export.fallback_placeholder'))
                             ->helperText(__('app.import_export.fallback_helper'))
+                            ->searchable()
+                            ->getSearchResultsUsing(function (string $search): array {
+                                $results = Stock::where('type', '!=', 'index')
+                                    ->where(
+                                        fn ($query) => $query
+                                            ->where('code', 'like', "%{$search}%")
+                                            ->orWhere('name', 'like', "%{$search}%")
+                                    )
+                                    ->limit(20)
+                                    ->get()
+                                    ->mapWithKeys(fn (Stock $stock) => [$stock->code => "{$stock->name} ({$stock->code})"])
+                                    ->toArray();
+
+                                if ($search && ! array_key_exists($search, $results)) {
+                                    $results = [$search => $search] + $results;
+                                }
+
+                                return $results;
+                            })
+                            ->getOptionLabelUsing(function (?string $value): ?string {
+                                if (! $value) {
+                                    return null;
+                                }
+
+                                $stock = Stock::where('code', $value)->first();
+
+                                return $stock ? "{$stock->name} ({$stock->code})" : $value;
+                            })
                             ->live(),
                         Grid::make(1)
                             ->schema(function ($get) {
@@ -322,10 +349,37 @@ class ManageTrades extends ManageRecords
                             ->maxSize(5120)
                             ->required()
                             ->helperText(__('app.import_export.bulk_desc')),
-                        TextInput::make('fallback_code')
+                        Select::make('fallback_code')
                             ->label(__('app.import_export.fallback_code'))
-                            ->placeholder(__('app.import_export.fallback_placeholder'))
-                            ->helperText(__('app.import_export.fallback_helper')),
+                            ->helperText(__('app.import_export.fallback_helper'))
+                            ->searchable()
+                            ->getSearchResultsUsing(function (string $search): array {
+                                $results = Stock::where('type', '!=', 'index')
+                                    ->where(
+                                        fn ($query) => $query
+                                            ->where('code', 'like', "%{$search}%")
+                                            ->orWhere('name', 'like', "%{$search}%")
+                                    )
+                                    ->limit(20)
+                                    ->get()
+                                    ->mapWithKeys(fn (Stock $stock) => [$stock->code => "{$stock->name} ({$stock->code})"])
+                                    ->toArray();
+
+                                if ($search && ! array_key_exists($search, $results)) {
+                                    $results = [$search => $search] + $results;
+                                }
+
+                                return $results;
+                            })
+                            ->getOptionLabelUsing(function (?string $value): ?string {
+                                if (! $value) {
+                                    return null;
+                                }
+
+                                $stock = Stock::where('code', $value)->first();
+
+                                return $stock ? "{$stock->name} ({$stock->code})" : $value;
+                            }),
                     ])
                     ->action(function (array $data) {
                         $images = $data['images'];
