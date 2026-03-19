@@ -9,14 +9,21 @@ use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 
 class ManageCashFlows extends ManageRecords
 {
     protected static string $resource = CashFlowResource::class;
+
+    private array $cachedXirrData = [];
 
     protected function getHeaderActions(): array
     {
@@ -133,14 +140,14 @@ class ManageCashFlows extends ManageRecords
 
                         $message = __('app.cash_flow.imported_count', ['count' => $importedCount]);
                         if ($skippedCount > 0) {
-                            $message .= ' '.__('app.cash_flow.skipped_count', ['count' => $skippedCount]);
+                            $message .= ' ' . __('app.cash_flow.skipped_count', ['count' => $skippedCount]);
                         }
 
                         Notification::make()
                             ->title($importedCount > 0 ? __('app.notifications.import_completed') : __('app.notifications.import_failed'))
                             ->body($message)
-                            ->when($importedCount > 0, fn ($notification) => $notification->success())
-                            ->when($importedCount === 0, fn ($notification) => $notification->warning())
+                            ->when($importedCount > 0, fn($notification) => $notification->success())
+                            ->when($importedCount === 0, fn($notification) => $notification->warning())
                             ->send();
                     } catch (\Exception $e) {
                         DB::rollBack();
@@ -163,57 +170,104 @@ class ManageCashFlows extends ManageRecords
                 ->icon('heroicon-o-calculator')
                 ->color('primary')
                 ->modalHeading(__('app.cash_flow.calculate_xirr'))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel(__('app.common.close'))
                 ->schema([
                     TextInput::make('portfolio_value')
                         ->label(__('app.cash_flow.portfolio_value'))
                         ->required()
                         ->numeric()
-                        ->step(0.01)
+                        ->step(10000)
                         ->prefix('¥')
-                        ->helperText(__('app.cash_flow.portfolio_value_helper')),
-                ])
-                ->action(function (array $data) {
-                    $portfolioValue = (float) $data['portfolio_value'];
+                        ->helperText(__('app.cash_flow.portfolio_value_helper'))
+                        ->live(debounce: 500),
 
-                    $cashFlows = CashFlow::orderBy('date')->get();
+                    Section::make()
+                        ->visible(fn(Get $get) => filled($get('portfolio_value')))
+                        ->compact()
+                        ->schema([
+                            Grid::make(2)
+                                ->schema([
+                                    TextEntry::make('total_cost')
+                                        ->label(__('app.cash_flow.total_cost'))
+                                        ->state(fn(Get $get) => $this->getXirrResult($get('portfolio_value'), 'total_cost')),
+                                    TextEntry::make('total_value')
+                                        ->label(__('app.cash_flow.total_value'))
+                                        ->state(fn(Get $get) => $this->getXirrResult($get('portfolio_value'), 'total_value')),
+                                    TextEntry::make('profit_loss')
+                                        ->label(__('app.cash_flow.profit_loss'))
+                                        ->color('danger')
+                                        ->state(fn(Get $get) => $this->getXirrResult($get('portfolio_value'), 'profit_loss')),
+                                    TextEntry::make('xirr')
+                                        ->label('XIRR')
+                                        ->color('danger')
+                                        ->state(fn(Get $get) => $this->getXirrResult($get('portfolio_value'), 'xirr')),
+                                ]),
+                        ]),
+                ]),
+        ];
+    }
 
-                    if ($cashFlows->isEmpty()) {
-                        Notification::make()
-                            ->title(__('app.cash_flow.no_cash_flows'))
-                            ->warning()
-                            ->send();
+    protected function getXirrResult(mixed $portfolioValue, string $type): HtmlString|string
+    {
+        $data = $this->calculateXirrData($portfolioValue);
 
-                        return;
-                    }
+        if (! $data) {
+            return '-';
+        }
 
-                    $amounts = $cashFlows->pluck('amount')->map(fn ($v) => (float) $v)->toArray();
-                    $dates = $cashFlows->pluck('date')->map(fn ($d) => $d->format('Y-m-d'))->toArray();
+        if (isset($data['error'])) {
+            return $type === 'total_cost' ? new HtmlString('<span class="text-danger-600">' . $data['error'] . '</span>') : '-';
+        }
 
-                    // Append portfolio value as the final positive cash-in on today's date
-                    $amounts[] = $portfolioValue;
-                    $dates[] = now()->format('Y-m-d');
+        return match ($type) {
+            'total_cost' => '¥' . number_format($data['total_cost'], 2),
+            'total_value' => '¥' . number_format($data['total_value'], 2),
+            'profit_loss' => new HtmlString("<span class='" . ($data['profit_loss'] >= 0 ? 'text-success-600' : 'text-danger-600') . " font-bold'>¥" . number_format($data['profit_loss'], 2) . '</span>'),
+            'xirr' => new HtmlString("<span class='" . ($data['xirr'] !== null && $data['xirr'] >= 0 ? 'text-success-600' : 'text-danger-600') . " font-bold'>" . ($data['xirr'] !== null ? number_format($data['xirr'] * 100, 2) . '%' : __('app.cash_flow.xirr_failed')) . '</span>'),
+            default => '-',
+        };
+    }
 
-                    $xirr = Helper::calculateXIRR($amounts, $dates);
+    protected function calculateXirrData(mixed $portfolioValue): ?array
+    {
+        $portfolioValue = (float) $portfolioValue;
+        if (! $portfolioValue) {
+            return null;
+        }
 
-                    if ($xirr === null) {
-                        Notification::make()
-                            ->title(__('app.cash_flow.xirr_failed'))
-                            ->body(__('app.cash_flow.xirr_failed_body'))
-                            ->danger()
-                            ->send();
+        $cacheKey = (string) $portfolioValue;
+        if (isset($this->cachedXirrData[$cacheKey])) {
+            return $this->cachedXirrData[$cacheKey];
+        }
 
-                        return;
-                    }
+        $cashFlows = CashFlow::orderBy('date')->get();
 
-                    $xirrPercentage = number_format($xirr * 100, 2);
+        if ($cashFlows->isEmpty()) {
+            return $this->cachedXirrData[$cacheKey] = ['error' => __('app.cash_flow.no_cash_flows')];
+        }
 
-                    Notification::make()
-                        ->title(__('app.cash_flow.xirr_result'))
-                        ->body("XIRR: {$xirrPercentage}%")
-                        ->success()
-                        ->persistent()
-                        ->send();
-                }),
+        $amounts = $cashFlows->pluck('amount')->map(fn($v) => (float) $v)->toArray();
+        $dates = $cashFlows->pluck('date')->map(fn($d) => $d->format('Y-m-d'))->toArray();
+
+        $totalCost = abs(array_sum(array_filter($amounts, fn($v) => $v < 0)));
+        $totalInflow = array_sum(array_filter($amounts, fn($v) => $v > 0));
+        $totalValue = $totalInflow + $portfolioValue;
+        $profitLoss = $totalValue - $totalCost;
+
+        // Append portfolio value as the final positive cash-in on today's date
+        $calcAmounts = $amounts;
+        $calcDates = $dates;
+        $calcAmounts[] = $portfolioValue;
+        $calcDates[] = now()->format('Y-m-d');
+
+        $xirr = Helper::calculateXIRR($calcAmounts, $calcDates);
+
+        return $this->cachedXirrData[$cacheKey] = [
+            'total_cost' => $totalCost,
+            'total_value' => $totalValue,
+            'profit_loss' => $profitLoss,
+            'xirr' => $xirr,
         ];
     }
 }

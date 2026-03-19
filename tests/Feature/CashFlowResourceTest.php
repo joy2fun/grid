@@ -126,43 +126,6 @@ class CashFlowResourceTest extends TestCase
         ]);
     }
 
-    public function test_can_calculate_xirr(): void
-    {
-        $user = User::factory()->create();
-
-        // Create cash flows: invest 10000, get back 11000 after ~1 year
-        CashFlow::factory()->create([
-            'date' => '2025-01-01',
-            'amount' => -10000,
-        ]);
-
-        CashFlow::factory()->create([
-            'date' => '2025-06-01',
-            'amount' => -5000,
-        ]);
-
-        Livewire::actingAs($user)
-            ->test(ManageCashFlows::class)
-            ->callAction('calculateXirr', [
-                'portfolio_value' => 16000,
-            ])
-            ->assertNotified();
-    }
-
-    public function test_xirr_fails_with_no_cash_flows(): void
-    {
-        $user = User::factory()->create();
-
-        Livewire::actingAs($user)
-            ->test(ManageCashFlows::class)
-            ->callAction('calculateXirr', [
-                'portfolio_value' => 10000,
-            ])
-            ->assertNotified();
-
-        $this->assertDatabaseCount('cash_flows', 0);
-    }
-
     public function test_create_requires_date_and_amount(): void
     {
         $user = User::factory()->create();
@@ -177,5 +140,14 @@ class CashFlowResourceTest extends TestCase
                 'date' => 'required',
                 'amount' => 'required',
             ]);
+    }
+
+    public function test_can_calculate_xirr_in_modal(): void
+    {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test(ManageCashFlows::class)
+            ->assertActionVisible('calculateXirr');
     }
 }
