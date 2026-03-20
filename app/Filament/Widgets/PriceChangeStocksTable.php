@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Filament\Resources\Trades\TradeResource;
 use App\Models\AppSetting;
 use App\Models\Stock;
+use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -80,6 +81,18 @@ class PriceChangeStocksTable extends TableWidget
             ->columns([
                 TextColumn::make('name')
                     ->label(__('app.stock.name'))
+                    ->action(
+                        Action::make('chart')
+                            ->modalSubmitAction(false)
+                            ->modalCancelAction(false)
+                            ->modalHeading(fn (Stock $record) => $record->name)
+                            ->modalContent(fn (Stock $record) => view('filament.resources.stocks.stock-chart-modal', ['record' => $record]))
+                    ),
+                TextColumn::make('current_price')
+                    ->label(__('app.widgets.current')),
+                TextColumn::make('last_trade_price')
+                    ->label(__('app.stock.last_trade'))
+                    ->numeric(decimalPlaces: 3)
                     ->url(fn ($record) => TradeResource::getUrl('index', [
                         'filters' => [
                             'stock_id' => [
@@ -87,11 +100,6 @@ class PriceChangeStocksTable extends TableWidget
                             ],
                         ],
                     ])),
-                TextColumn::make('current_price')
-                    ->label(__('app.widgets.current')),
-                TextColumn::make('last_trade_price')
-                    ->label(__('app.stock.last_trade'))
-                    ->numeric(decimalPlaces: 3),
                 TextColumn::make('priceChange')
                     ->label(__('app.widgets.change_percentage'))
                     ->getStateUsing(function (Stock $record): ?float {
