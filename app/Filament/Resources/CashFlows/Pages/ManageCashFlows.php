@@ -6,6 +6,7 @@ use App\Filament\Resources\CashFlows\CashFlowResource;
 use App\Models\CashFlow;
 use App\Utilities\Helper;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -31,7 +32,38 @@ class ManageCashFlows extends ManageRecords
             CreateAction::make()
                 ->label(__('app.common.new'))
                 ->icon('heroicon-o-plus'),
-            Action::make('importCsv')
+            ActionGroup::make([
+                Action::make('exportCsv')
+                    ->label(__('app.common.export'))
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(function () {
+                        $cashFlows = CashFlow::orderBy('date')->get();
+
+                        $csvData = [];
+                        $csvData[] = ['date', 'amount', 'notes']; // Header matching import format
+
+                        foreach ($cashFlows as $cashFlow) {
+                            $csvData[] = [
+                                $cashFlow->date->format('Y-m-d'),
+                                $cashFlow->amount,
+                                $cashFlow->notes ?? '',
+                            ];
+                        }
+
+                        $filename = 'cash-flows-'.now()->format('Y-m-d-His').'.csv';
+
+                        return response()->streamDownload(function () use ($csvData) {
+                            $output = fopen('php://output', 'w');
+                            foreach ($csvData as $row) {
+                                fputcsv($output, $row);
+                            }
+                            fclose($output);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv; charset=utf-8',
+                        ]);
+                    }),
+                Action::make('importCsv')
                 ->label(__('app.cash_flow.import_csv'))
                 ->icon('heroicon-o-document-arrow-up')
                 ->color('gray')
@@ -165,6 +197,11 @@ class ManageCashFlows extends ManageRecords
                             ->send();
                     }
                 }),
+            ])
+                ->label(__('app.import_export.label'))
+                ->icon('heroicon-o-arrow-path-rounded-square')
+                ->color('gray')
+                ->button(),
             Action::make('calculateXirr')
                 ->label(__('app.cash_flow.calculate_xirr'))
                 ->icon('heroicon-o-calculator')
