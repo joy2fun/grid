@@ -7,6 +7,7 @@ use App\Filament\Resources\Trades\TradeResource;
 use App\Models\Holding;
 use App\Services\PortfolioService;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -78,7 +79,14 @@ class HoldingResource extends Resource
                     ->label(__('app.holding.stock'))
                     ->description(fn (Holding $record): string => $record->stock->code)
                     ->sortable()
-                    ->searchable(['name', 'code']),
+                    ->searchable(['name', 'code'])
+                    ->action(
+                        Action::make('chart')
+                            ->modalSubmitAction(false)
+                            ->modalCancelAction(false)
+                            ->modalHeading(fn (Holding $record) => $record->stock->name)
+                            ->modalContent(fn (Holding $record) => view('filament.resources.stocks.stock-chart-modal', ['record' => $record->stock]))
+                    ),
                 TextColumn::make('stock.xirr')
                     ->label(__('app.stock.xirr'))
                     ->getStateUsing(fn (Holding $record) => ($record->stock->xirr !== null) ? $record->stock->xirr * 100 : null)
