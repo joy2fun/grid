@@ -18,7 +18,7 @@ class GridResource extends Resource
 {
     protected static ?string $model = Grid::class;
 
-    protected static ?bool $canCreate = false;
+    protected static ?bool $canCreate = true;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
 
