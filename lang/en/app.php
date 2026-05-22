@@ -83,6 +83,7 @@ return [
         'stock_split_helper' => 'Enter the split ratio. E.g., 2 means 1 share becomes 2, 0.5 means 2 shares become 1',
         'notes' => 'Notes',
         'notes_placeholder' => 'Enter trade notes (optional)',
+        'price_change_percentage' => 'Change %',
         'executed_at' => 'Executed At',
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',

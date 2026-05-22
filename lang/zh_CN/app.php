@@ -68,6 +68,7 @@ return [
         'quantity' => '数量',
         'notes' => '备注',
         'notes_placeholder' => '输入交易备注（可选）',
+        'price_change_percentage' => '变动 %',
         'executed_at' => '执行时间',
         'created_at' => '创建时间',
         'updated_at' => '更新时间',

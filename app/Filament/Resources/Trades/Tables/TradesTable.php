@@ -61,6 +61,16 @@ class TradesTable
                     })
                     ->numeric(0)
                     ->sortable(),
+                TextColumn::make('price_change_percentage')
+                    ->label(__('app.trade.price_change_percentage'))
+                    ->formatStateUsing(fn (?float $state): string => $state !== null ? number_format($state, 2).'%' : 'N/A')
+                    ->color(fn (?float $state): string => match (true) {
+                        $state === null => 'gray',
+                        $state > 0 => 'success',
+                        $state < 0 => 'danger',
+                        default => 'gray',
+                    })
+                    ->weight('bold'),
                 TextColumn::make('notes')
                     ->label(__('app.trade.notes'))
                     ->limit(30)
