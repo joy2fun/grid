@@ -59,6 +59,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->topNavigation()
             ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => '<link rel="apple-touch-icon" href="/favicon.jpg">',
+            )
+            ->renderHook(
                 PanelsRenderHook::TOPBAR_START,
                 fn (): string => view('filament.components.mobile-quick-links')->render(),
             )
